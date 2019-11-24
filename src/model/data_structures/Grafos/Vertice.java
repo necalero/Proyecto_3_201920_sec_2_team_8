@@ -6,6 +6,7 @@ public class Vertice<I>
 {
 	private LinkedList<Arco> edgeTo;
 	private I info;
+	private int lol;
 	private boolean marked;
 	private int id;
 
