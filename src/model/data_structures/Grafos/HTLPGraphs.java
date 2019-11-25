@@ -14,8 +14,29 @@ public class HTLPGraphs <K ,V>
 	public HTLPGraphs(int m)
 	{
 		capacidad = m;
+		cantKeys = 0;
 		keys = new Integer[m];
 		data = new Vertice[m];
+		for(int j = 0; j<capacidad; j++)
+		{
+			keys[j]= null;
+			data[j]= null;
+		}
+	}
+	
+	public HTLPGraphs()
+	{
+		capacidad = 11;
+		cantKeys = 0;
+		keys = new Integer[11];
+		data = new Vertice[11];
+		
+		for(int j = 0; j<capacidad; j++)
+		{
+			keys[j]= null;
+			data[j]= null;
+		}
+		
 	}
 
 	public int hash(K key)
@@ -24,7 +45,7 @@ public class HTLPGraphs <K ,V>
 		return hash;
 	}
 
-	public void put(K Key,V  value)
+	public void put(K Key, int pId, double pLon, double pLat, int pMovId)
 	{
 		if(verificarCapacidadCarga())
 		{
@@ -38,26 +59,56 @@ public class HTLPGraphs <K ,V>
 			{
 				if(keys[i].equals(Key))
 				{				
-					data[i] = new Vertice(value);
+					data[i] = new Vertice((int) Key, pLon, pLat, pMovId);
 					return;
 				}
 			}
 			keys[i] = (Integer) Key;
-			data[i] = new Vertice(value);
+			data[i] = new Vertice((int) Key, pLon, pLat, pMovId);
+			cantKeys++;
+
+
+		}
+	}
+	
+	public void put(K Key, Vertice pVertice)
+	{
+		if(verificarCapacidadCarga())
+		{
+			rehash(capacidad*2);
+		}
+		else
+		{
+			int hash =  hash(Key);
+			int i;
+			for(i = hash;keys[i] != null; i = (i+1)%capacidad)
+			{
+				if(keys[i].equals(Key))
+				{				
+					data[i] = pVertice;
+					return;
+				}
+			}
+			keys[i] = (Integer) Key;
+			data[i] = pVertice;
 			cantKeys++;
 
 
 		}
 	}
 
-
+	/**
+	 * Retorna el vertice perteneciente a la llave K.
+	 * @param Key
+	 * @return
+	 */
 	public V get(K Key)
 	{
 		for(int i = hash(Key);keys[i] != null; i = (i+1)%capacidad )
 		{
 			if(keys[i].equals(Key))
 			{
-				return (V) data[i].darInfo();
+				return (V) data[i];
 			}
 		}
 
@@ -82,7 +133,7 @@ public class HTLPGraphs <K ,V>
 		while(keys[i] != null)
 		{
 			K keyChange = (K) keys[i];
-			V dataChange = (V) data[i];
+			Vertice dataChange = (Vertice) data[i];
 			keys[i] = null;
 			data[i] = null;
 			cantKeys--;
@@ -118,7 +169,7 @@ public class HTLPGraphs <K ,V>
 			if(keys[i] != null)
 			{
 				K llave = (K) keys[i];
-				V valor = (V) data[i];
+				Vertice valor = (Vertice) data[i];
 				t.put(llave, valor);
 			}
 		}

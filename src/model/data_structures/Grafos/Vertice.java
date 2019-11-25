@@ -2,45 +2,76 @@ package model.data_structures.Grafos;
 
 import java.util.LinkedList;
 
-public class Vertice<I>
+public class Vertice
 {
 	private LinkedList<Arco> edgeTo;
-	private I info;
-	private int lol;
-	private boolean marked;
 	private int id;
+	double lon;
+	double lat;
+	int MOVEMENT_ID;
+	private boolean marked;
+	
 
-	public Vertice(I info, int id)
+	public Vertice(int id, double plon, double plat, int mov_id)
 	{
-		this.info = info;
+		lon = plon;
+		lat = plat;
+		MOVEMENT_ID = mov_id;
 		marked = false;
 		this.id = id;
 	}
-	public void anadirArco(Vertice V, double pPeso)
+	public void anadirArco(Vertice V, double pDistancia, double pTiempo)
 	{
-		edgeTo.add(new Arco(this, V, pPeso));
+		edgeTo.add(new Arco(this, V, pDistancia, pTiempo));
 	}
 	public void eliminarArco(Vertice V)
 	{
 		edgeTo.remove(buscarArcoA(V));
 	}
-	public I darInfo()
+	public double darID()
 	{
-		return info;
+		return id;
 	}
-
-	public void setInfo(I pInfo)
+	public double darLongitud()
 	{
-		info = pInfo;
+		return lon;
 	}
-
-	public double darPesoArco(Vertice V)
+	public double darLatitud()
 	{
-		return (double) buscarArcoA(V).darPeso();
+		return lat;
 	}
-	public void setPesoArco(Vertice V, double pPeso)
+	public int darMOVEMENT_ID()
 	{
-		buscarArcoA(V).setPeso(pPeso);
+		return MOVEMENT_ID;
+	}
+	public double darPesoDistancia(Vertice V)
+	{
+		return (double) buscarArcoA(V).darDistancia();
+	}
+	public double darPesoTiempo(Vertice V)
+	{
+		return (double) buscarArcoA(V).darTiempo();
+	}
+	public double darPesoVelocidad(Vertice V)
+	{
+		return (double) buscarArcoA(V).darVelocidad();
+	}
+	
+	public void setInfo(int pId, double plon, double plat, int pMovId)
+	{
+		id = pId;
+		lon = plon;
+		lat = plat;
+		MOVEMENT_ID = pMovId;
+	}
+	
+	public void setDistanciaArco(Vertice V, double pDistancia)
+	{
+		buscarArcoA(V).setDistancia(pDistancia);
+	}
+	public void setTiempoArco(Vertice V, double pTiempo)
+	{
+		buscarArcoA(V).setTiempo(pTiempo);
 	}
 
 	public Arco buscarArcoA(Vertice V)
@@ -69,6 +100,10 @@ public class Vertice<I>
 	{
 		return marked;
 	}
+	/**
+	 * Retorna la lista de IDs a los que es adyacente el vertice.
+	 * @return
+	 */
 	public int[] adj()
 	{
 		int[] listaAdyacentes = new int[edgeTo.size()];

@@ -2,30 +2,60 @@ package model.data_structures.Grafos;
 
 public class Arco<K> {
 
-	private Vertice origen;
-	private Vertice destino;
-	private double peso;
-
-	public Arco(Vertice pOrigen, Vertice pDestino, double pPeso) {
-		origen = pOrigen;
-		destino = pDestino;
-		peso = pPeso;
+	private Vertice v1;
+	private Vertice v2;
+	private double distancia;
+	private double tiempo;
+	private double velocidad;
+	public Arco(Vertice pOrigen, Vertice pDestino, double pDistancia, double pTiempo) {
+		v1 = pOrigen;
+		v2 = pDestino;
+		distancia = pDistancia;
+		tiempo = pTiempo;
+		velocidad = pDistancia/pTiempo;
 	}
 
-	public double darPeso()
+	
+	public double darDistancia() 
 	{
-		return peso;
+		return distancia;
 	}
-	public void setPeso(double pPeso)
+
+	public void setDistancia(double distancia) 
 	{
-		peso = pPeso;
+		this.distancia = distancia;
+		actualizarVelocidad();
 	}
+
+	public double darTiempo() 
+	{
+		return tiempo;
+	}
+
+	public void setTiempo(double tiempo) 
+	{
+		this.tiempo = tiempo;
+		actualizarVelocidad();
+	}
+
+	public double darVelocidad() 
+	{
+		return velocidad;
+	}
+
+	public void actualizarVelocidad() 
+	{
+		if(distancia!=0&&tiempo!=0)
+		{
+			velocidad= distancia/tiempo;
+		}
+		
+	}
+	
 	public Vertice darDestino()
 	{
-		return destino;
+		return v2;
 	}
-	public void cambiarPeso(double pPeso)
-	{
-		peso = pPeso;
-	}
+	
+	
 }

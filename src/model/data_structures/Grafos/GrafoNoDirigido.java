@@ -14,12 +14,12 @@ public class GrafoNoDirigido<K, V>
 
 
 	/**
-	 * Crea un grafo No dirigido de tamaño V vértices y sin arcos
-	 * @param V
+	 * Crea un grafo No dirigido de tamaño n vértices y sin arcos
+	 * @param n Numero de Vertices
 	 */
-	public GrafoNoDirigido(int V) {
-		numVertices = V;
-		vertices = new HTLPGraphs<>(V);
+	public GrafoNoDirigido(int n) {
+		numVertices = n;
+		vertices = new HTLPGraphs<>(n);
 
 	}
 
@@ -49,23 +49,31 @@ public class GrafoNoDirigido<K, V>
 	 * @param idVertexFin
 	 * @param cost
 	 */
-	@SuppressWarnings("unchecked")
-	public void addEdge(int source, int destination, int weight) 
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	public void addEdge(int source, int destination, double distancia, double tiempo ) 
 	{
-		((Vertice) vertices.get(source)).anadirArco((Vertice) vertices.get(destination),weight);
-		((Vertice) vertices.get(destination)).anadirArco((Vertice) vertices.get(source),weight);
+		Vertice V1 = (Vertice) vertices.get(source);
+		Vertice V2 = (Vertice) vertices.get(destination);
+		V1.anadirArco(V2, distancia, tiempo);
+		V2.anadirArco(V1, distancia, tiempo);
+		numVertices++;
 
 	}
 
 	/**
-	 * Obtener la información de un vértice. Si el vértice no existe retorna null
+	 * Obtener la información de un vértice en formato de arreglo [id, lon, lat, mov_id]. Si el vértice no existe retorna null. 
 	 * @param idVertex
 	 * @return
 	 */
 	@SuppressWarnings("unchecked")
-	public V getInfoVertex(K idVertex)
+	public double[] getInfoVertex(K idVertex)
 	{
-		return (V) ((Vertice) vertices.get(idVertex)).darInfo();
+		double aRetornar[] = new double[4];
+		aRetornar[0] = ((Vertice) vertices.get(idVertex)).darID();
+		aRetornar[1] = ((Vertice) vertices.get(idVertex)).darLongitud();
+		aRetornar[2] = ((Vertice) vertices.get(idVertex)).darLatitud();
+		aRetornar[3] = ((Vertice) vertices.get(idVertex)).darMOVEMENT_ID();
+		return aRetornar;
 	}
 
 	/**
@@ -74,21 +82,28 @@ public class GrafoNoDirigido<K, V>
 	 * @param infoVertex
 	 */
 	@SuppressWarnings("unchecked")
-	public void setInfoVertex(K idVertex, V infoVertex)
+	public void setInfoVertex(K idVertex, int id, double lon, double lat, int mov_id)
 	{
-		((Vertice) vertices.get(idVertex)).setInfo(infoVertex);
+		((Vertice) vertices.get(idVertex)).setInfo(id, lon, lat, mov_id);;
 	}
 
 	/**
-	 * Obtener el costo de un arco, si el arco no existe, retorna -1
+	 * Obtener los costos de un arco, si el arco no existe, retorna -1
+	 * [Distancia, Tiempo, Velocidad]
 	 * @param idVertexIni
 	 * @param idVertexFin
 	 * @return
 	 */
 	@SuppressWarnings("unchecked")
-	public double getCostArc(K idVertexIni, K idVertexFin)
+	public double[] getCostArc(K idVertexIni, K idVertexFin)
 	{
-		return ((Vertice) vertices.get(idVertexIni)).darPesoArco((Vertice) vertices.get(idVertexFin));
+		Vertice ini = (Vertice) vertices.get(idVertexIni);
+		Vertice fin = (Vertice) vertices.get(idVertexFin);
+		double aRetornar[] = new double[3];
+		aRetornar[0] = ini.darPesoDistancia(fin);
+		aRetornar[1] = ini.darPesoTiempo(fin);
+		aRetornar[2] = ini.darPesoVelocidad(fin);
+		return aRetornar;
 	}
 
 	/**
@@ -97,10 +112,16 @@ public class GrafoNoDirigido<K, V>
 	 * @param idVertexFin
 	 * @param cost
 	 */
-	public void setCostArc(K idVertexIni, K idVertexFin, double cost)
+	@SuppressWarnings("unchecked")
+	public void setCostArc(K idVertexIni, K idVertexFin, double Tiempo, double Distancia)
 	{
-		((Vertice) vertices.get(idVertexIni)).setPesoArco((Vertice) idVertexFin,cost);
-		((Vertice) vertices.get(idVertexFin)).setPesoArco((Vertice) idVertexIni,cost);
+		Vertice ini = (Vertice) vertices.get(idVertexIni);
+		Vertice fin =  (Vertice) vertices.get(idVertexFin);
+
+		ini.setDistanciaArco(fin, Distancia);
+		ini.setTiempoArco(fin, Tiempo);
+		fin.setDistanciaArco(ini, Distancia);
+		fin.setTiempoArco(ini, Tiempo);
 	}
 
 	/**
@@ -108,9 +129,10 @@ public class GrafoNoDirigido<K, V>
 	 * @param idVertex
 	 * @param infoVertex
 	 */
-	public void addVertex(K idVertex, V infoVertex)
+	@SuppressWarnings("unchecked")
+	public void addVertex(K idVertex, V infoVertex, double lat, double lon, int mov_id)
 	{
-		vertices.put(idVertex, new Vertice(infoVertex,(int) idVertex));
+		vertices.put(idVertex, new Vertice((int) idVertex, lon, lat, mov_id));
 	}
 
 	/**
@@ -208,7 +230,7 @@ public class GrafoNoDirigido<K, V>
 		{
 			if(vertice.isMarked())
 			{
-				ccDat.put((K)((Integer)vertice.darId()),(V) vertice);
+				ccDat.put((K)((Integer)vertice.darId()),(Vertice) vertice);
 			}
 		}
 		K[] ccL = (K[]) ccDat.darKeys();
@@ -216,15 +238,6 @@ public class GrafoNoDirigido<K, V>
 		return cc;
 	}
 
-	public Informacion getInfoVertex(Vertice darDestino) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-
-	public Object darVertices() {
-		// TODO Auto-generated method stub
-		return null;
-	}
+	
 
 }
