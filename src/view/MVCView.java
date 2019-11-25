@@ -19,7 +19,7 @@ public class MVCView
 	{
 		System.out.println("");
 		System.out.println("1. Cargar los datos.");
-		System.out.println("2. Crea el grafo grafo.");
+		System.out.println("2. Calcular pesos de arcos.");
 		System.out.println("3. Cargar grafo con los datos");
 		System.out.println("4. Reportar componentes conectados.");
 		System.out.println("5. Muestra el grafo en html.");

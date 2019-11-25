@@ -82,17 +82,7 @@ public class MVCModelo<K> {
 				Vertice vertice2 = grafo.getVertex(val2);
 				if(vertice1 != null && vertice2 != null)
 				{
-					double lat1 = vertice1.darLatitud();
-					double lat2= vertice2.darLatitud();
-					double lon1= vertice1.darLongitud();
-					double lon2= vertice2.darLongitud();
-					Haversine haversineC = new Haversine();
-					double haversineDistance = haversineC.distance(lat1, lon1, lat2, lon2);
-
-					//TODO: Calcular el costo tiempo entre vertices.
-					double costoTiempo = 10;
-
-					grafo.addEdge(val1, val2, haversineDistance, costoTiempo);
+					grafo.addEdge(val1, val2, -1, -1);
 					cantidadArcos++;
 				}
 			}
@@ -101,6 +91,47 @@ public class MVCModelo<K> {
 		}
 		System.out.println("Se crearon " + cantidadArcos + " arcos");
 		crearArchivo();
+	}
+	
+	public void calcularPesos()
+	{
+		for(Vertice vertice : grafo.darVertices())
+		{
+			
+			if(vertice !=null)
+			{
+				Arco arcos[] = new Arco[vertice.darArcos().size()];
+				arcos = (Arco[]) vertice.darArcos().toArray();
+				for(Arco arco : arcos)
+				{
+					if(arco !=null)
+					{
+						double lat1 = vertice.darLatitud();
+						double lat2= arco.darDestino().darLatitud();
+						double lon1= vertice.darLongitud();
+						double lon2= arco.darDestino().darLongitud();
+						Haversine haversineC = new Haversine();
+						double haversineDistance = haversineC.distance(lat1, lon1, lat2, lon2);
+						
+						double costoTiempo = 0;
+						
+						if(vertice.darMOVEMENT_ID()==arco.darDestino().darMOVEMENT_ID())
+						{
+							costoTiempo = 10;
+						}
+						else 
+						{
+							costoTiempo = 100;
+						}
+						vertice.setDistanciaArco(arco.darDestino(), haversineDistance);
+						vertice.setTiempoArco(arco.darDestino(), costoTiempo);
+					}
+					
+				}
+				
+			}
+		}
+		
 	}
 
 	public void crearArchivo() throws IOException

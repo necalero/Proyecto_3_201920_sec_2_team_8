@@ -28,7 +28,7 @@ public class Vertice
 	{
 		edgeTo.remove(buscarArcoA(V));
 	}
-	public double darID()
+	public int darId()
 	{
 		return id;
 	}
@@ -118,8 +118,5 @@ public class Vertice
 	{
 		return edgeTo;
 	}
-	public int darId()
-	{
-		return id;
-	}
+	
 }
