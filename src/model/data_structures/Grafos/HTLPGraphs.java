@@ -185,6 +185,7 @@ public class HTLPGraphs <K ,V>
 
 	public Vertice[] darData()
 	{
+		
 		return data;
 	}
 

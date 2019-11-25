@@ -113,6 +113,11 @@ public class Vertice
 		}
 		return listaAdyacentes;
 	}
+	
+	public LinkedList darArcos()
+	{
+		return edgeTo;
+	}
 	public int darId()
 	{
 		return id;

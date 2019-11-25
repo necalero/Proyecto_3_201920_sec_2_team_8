@@ -60,6 +60,10 @@ public class GrafoNoDirigido<K, V>
 
 	}
 
+	public Vertice getVertex(int id)
+	{
+		return (Vertice) vertices.get((int) id);
+	}
 	/**
 	 * Obtener la información de un vértice en formato de arreglo [id, lon, lat, mov_id]. Si el vértice no existe retorna null. 
 	 * @param idVertex
@@ -113,7 +117,7 @@ public class GrafoNoDirigido<K, V>
 	 * @param cost
 	 */
 	@SuppressWarnings("unchecked")
-	public void setCostArc(K idVertexIni, K idVertexFin, double Tiempo, double Distancia)
+	public void setCostEdge(K idVertexIni, K idVertexFin, double Tiempo, double Distancia)
 	{
 		Vertice ini = (Vertice) vertices.get(idVertexIni);
 		Vertice fin =  (Vertice) vertices.get(idVertexFin);
@@ -130,9 +134,14 @@ public class GrafoNoDirigido<K, V>
 	 * @param infoVertex
 	 */
 	@SuppressWarnings("unchecked")
-	public void addVertex(K idVertex, V infoVertex, double lat, double lon, int mov_id)
+	public void addVertex(K idVertex, double lat, double lon, int mov_id)
 	{
 		vertices.put(idVertex, new Vertice((int) idVertex, lon, lat, mov_id));
+	}
+	
+	public void addVertex(K idVertex, Vertice V)
+	{
+		vertices.put(idVertex, V);
 	}
 
 	/**
@@ -236,6 +245,11 @@ public class GrafoNoDirigido<K, V>
 		K[] ccL = (K[]) ccDat.darKeys();
 		Iterable<K> cc = Arrays.asList(ccL);
 		return cc;
+	}
+	
+	public Vertice[] darVertices()
+	{
+		return vertices.darData();
 	}
 
 	

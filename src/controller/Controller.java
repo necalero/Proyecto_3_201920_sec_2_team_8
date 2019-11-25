@@ -16,9 +16,6 @@ public class Controller {
 	/* Instancia de la Vista */
 	private MVCView view;
 	
-	private Queue<Integer> llaves = new Queue<>();
-	private Queue<String> vals = new Queue<>();
-
 	/**
 	 * Crear la vista y el modelo del proyecto
 	 * @throws IOException 

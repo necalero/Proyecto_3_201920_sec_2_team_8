@@ -6,12 +6,14 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.LinkedList;
 
 import javax.management.Query;
 import model.data_structures.Grafos.Arco;
 import model.data_structures.Grafos.GrafoNoDirigido;
-import model.data_structures.Grafos.Informacion;
-import model.data_structures.Grafos.Interseccion;
+
+import model.data_structures.Grafos.Vertice;
+import model.data_structures.Haversine;
 import model.data_structures.Queue;
 
 /**
@@ -21,13 +23,14 @@ import model.data_structures.Queue;
 
 public class MVCModelo<K> {
 
-	private GrafoNoDirigido<Integer,Informacion> grafo;
+	private GrafoNoDirigido grafo;
 
+	@SuppressWarnings({ "static-access", "unchecked" })
 	public MVCModelo() throws IOException
 	{
 		String txtArcos = "./data/bogota_arcos.txt";
 		String txtVertices = "./data/bogota_vertices.txt";
-		Queue colaDeNodos = new Queue();
+
 		int cantidad = 0;
 		int contador = 0;
 
@@ -37,37 +40,27 @@ public class MVCModelo<K> {
 		while(lineaActual2 != "" && lineaActual2 != null)
 		{
 			String[] valores = lineaActual2.split(";");
-			if(valores[0].equals("id"))
-			{
+			if(!(valores[0].equals("id"))) cantidad++;
 
-			}
-			else
-			{
-				cantidad++;
-			}
 			lineaActual2 = leer2.readLine();
 		}
 		int cantidadVertices = 0;
 
-		grafo = new GrafoNoDirigido<Integer,Informacion>(cantidad);
+		grafo = new GrafoNoDirigido(cantidad);
 		FileReader lector = new FileReader(txtVertices);
 		BufferedReader leer = new BufferedReader(lector);
 		String lineaActual = leer.readLine();
 		while(lineaActual != "" && lineaActual != null)
 		{
 			String[] valores = lineaActual.split(";");
-			if(valores[0].equals("id"))
-			{
-
-			}
-			else
+			if(!(valores[0].equals("id")))
 			{
 				int id = Integer.parseInt(valores[0]); 
-				double longi = Double.parseDouble(valores[1]);
-				double lati = Double.parseDouble(valores[2]);
-				int mov = Integer.parseInt(valores[3]);
-				Informacion info = new Informacion(lati, longi, mov);
-				grafo.addVertex(id, info);
+				double lon = Double.parseDouble(valores[1]);
+				double lat = Double.parseDouble(valores[2]);
+				int mov_id = Integer.parseInt(valores[3]);
+				Vertice vertex = new Vertice(id, lon, lat, mov_id);
+				grafo.addVertex(id, vertex);
 				cantidadVertices++;
 			}
 			lineaActual = leer.readLine();
@@ -85,17 +78,21 @@ public class MVCModelo<K> {
 			{
 				int val1 = Integer.parseInt(valores[0]);
 				int val2 = Integer.parseInt(valores[i]);
-				Informacion info1 = grafo.getInfoVertex(val1);
-				Informacion info2 = grafo.getInfoVertex(val2);
-				if(info1 != null && info2 != null)
+				Vertice vertice1 = grafo.getVertex(val1);
+				Vertice vertice2 = grafo.getVertex(val2);
+				if(vertice1 != null && vertice2 != null)
 				{
-					double sin1 = Math.pow(Math.sin((info2.darLatitud()-info1.darLatitud())/2), 2);
-					double cos1 = Math.cos(info1.darLatitud());
-					double cos2 = Math.cos(info2.darLatitud());
-					double sin2 = Math.pow((Math.sin((info2.darLongitud()-info1.darLongitud())/2)), 2);
-					double interno = Math.asin(Math.sqrt(sin1+(cos1*cos2*sin2)));
-					double cost = 2*6371*interno;
-					grafo.setCostArc(val1, val2, cost);
+					double lat1 = vertice1.darLatitud();
+					double lat2= vertice2.darLatitud();
+					double lon1= vertice1.darLongitud();
+					double lon2= vertice2.darLongitud();
+					Haversine haversineC = new Haversine();
+					double haversineDistance = haversineC.distance(lat1, lon1, lat2, lon2);
+
+					//TODO: Calcular el costo tiempo entre vertices.
+					double costoTiempo = 10;
+
+					grafo.addEdge(val1, val2, haversineDistance, costoTiempo);
 					cantidadArcos++;
 				}
 			}
@@ -148,24 +145,24 @@ public class MVCModelo<K> {
 		writter.println("});");
 		writter.println("var line;");
 		writter.println("var path;");
-		for(Interseccion<Integer,Informacion> inter: grafo.darVertices())
+		for(Vertice vertice: grafo.darVertices())
 		{
-			for(Arco<Integer> arcos : inter.darArcos())
+			if(vertice!=null)
 			{
-				if(arcos != null)
+				Arco arcos[] = new Arco[vertice.darArcos().size()];
+				arcos = (Arco[]) vertice.darArcos().toArray();
+				for(Arco<Integer> arco : arcos)
 				{
-					Informacion info = (Informacion) grafo.getInfoVertex(arcos.darDestino());
-					if(info != null)
+					if(arco != null)
 					{
-						Informacion informa = (Informacion) inter.darInfo();
 						writter.println("line = [");
 						writter.println("{");
-						writter.println("lat: " + info.darLatitud() + ",");
-						writter.println("lng: " + info.darLongitud());
+						writter.println("lat: " + vertice.darLatitud() + ",");
+						writter.println("lng: " + vertice.darLongitud());
 						writter.println("},");
 						writter.println("{");
-						writter.println("lat: " + info.darLatitud()+ ",");
-						writter.println("lng: " + info.darLongitud());
+						writter.println("lat: " + vertice.darLatitud()+ ",");
+						writter.println("lng: " + vertice.darLongitud());
 						writter.println("}");
 						writter.println("];");
 						writter.println("path = new google.maps.Polyline({");
@@ -176,10 +173,11 @@ public class MVCModelo<K> {
 						writter.println("path.setMap(map);");
 						contador++;
 						System.out.println(contador);
+
 					}
+
+
 				}
-
-
 			}
 
 		}
