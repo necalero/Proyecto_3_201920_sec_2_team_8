@@ -73,16 +73,16 @@ public class MVCModelo<K> {
 		String lineaActual3 = leer3.readLine();
 		while(lineaActual3 != "" && lineaActual3 != null)
 		{
-			String[] valores = lineaActual3.split(" ");
-			for(int i=1 ; i<valores.length ; i++)
+			String[] verticesArcos = lineaActual3.split(" ");
+			for(int i=1 ; i<verticesArcos.length ; i++)
 			{
-				int val1 = Integer.parseInt(valores[0]);
-				int val2 = Integer.parseInt(valores[i]);
-				Vertice vertice1 = grafo.getVertex(val1);
-				Vertice vertice2 = grafo.getVertex(val2);
+				int vert1 = Integer.parseInt(verticesArcos[0]);
+				int vert2 = Integer.parseInt(verticesArcos[i]);
+				Vertice vertice1 = grafo.getVertex(vert1);
+				Vertice vertice2 = grafo.getVertex(vert2);
 				if(vertice1 != null && vertice2 != null)
 				{
-					grafo.addEdge(val1, val2, -1, -1);
+					grafo.addEdge(vert1, vert2, -1, -1);
 					cantidadArcos++;
 				}
 			}
@@ -134,48 +134,51 @@ public class MVCModelo<K> {
 		
 	}
 
-	public void crearArchivo() throws IOException
+	public void crearArchivoHTML() throws IOException
 	{
 		String ruta = "./data/mapa.html";
 		int contador = 0;
-		PrintWriter writter = null;
+		PrintWriter writer = null;
 		try
 		{
-			writter = new PrintWriter(ruta);
+			writer = new PrintWriter(ruta);
 		}catch (Exception e) {
 			e.printStackTrace();
 		}
-		writter.println("<html>");
-		writter.println("<head>");
-		writter.println("<meta name=\"view\" content=\"initial-scale=1.0, user-scalable=no\">");
-		writter.println("<meta charset=\"utf-8\">");
-		writter.println("<title>Mapa</title>");
-		writter.println("<style>");
-		writter.println("#map {");
-		writter.println("height: 100%;");
-		writter.println("}");
-		writter.println("html,");
-		writter.println("body {");
-		writter.println("height: 100%;");
-		writter.println("margin: 0;");
-		writter.println("padding: 0;");
-		writter.println("}");
-		writter.println("</style>");
-		writter.println("</head>");
-		writter.println("<body>");
-		writter.println("<div id=\"map\"></div>");
-		writter.println("<script>");
-		writter.println("function initMap() {");
-		writter.println("var map = new google.maps.Map(document.getElementById('map'), {");
-		writter.println("zoom: 4,");
-		writter.println("center: {");
-		writter.println("lat: 40.1835287,");
-		writter.println("lng: -3.537393");
-		writter.println("},");
-		writter.println("mapTypeId: 'roadmap'");
-		writter.println("});");
-		writter.println("var line;");
-		writter.println("var path;");
+		writer.println("<!DOCTYPE html>");
+		writer.println("<html>");
+		writer.println("<head>");
+		writer.println("<meta name=\"view\" content=\"initial-scale=1.0, user-scalable=no\">");
+		writer.println("<meta charset=\"utf-8\">");
+		writer.println("<title>Mapa Proyecto 3</title>");
+		writer.println("<style>");
+		writer.println("#map {");
+		writer.println("height: 100%;");
+		writer.println("}");
+		writer.println("html,");
+		writer.println("body {");
+		writer.println("height: 100%;");
+		writer.println("margin: 0;");
+		writer.println("padding: 0;");
+		writer.println("}");
+		writer.println("</style>");
+		writer.println("</head>");
+		
+		
+		writer.println("<body>");
+		writer.println("<div id=\"map\"></div>");
+		writer.println("<script>");
+		writer.println("function initMap() {");
+		writer.println("var map = new google.maps.Map(document.getElementById('map'), {");
+		writer.println("zoom: 11,");
+		writer.println("center: {");
+		writer.println("lat: 4.65,");
+		writer.println("lng: -74.1");
+		writer.println("},");
+		writer.println("mapTypeId: 'roadmap'");
+		writer.println("});");
+		writer.println("var line;");
+		writer.println("var path;");
 		for(Vertice vertice: grafo.darVertices())
 		{
 			if(vertice!=null)
@@ -186,22 +189,22 @@ public class MVCModelo<K> {
 				{
 					if(arco != null)
 					{
-						writter.println("line = [");
-						writter.println("{");
-						writter.println("lat: " + vertice.darLatitud() + ",");
-						writter.println("lng: " + vertice.darLongitud());
-						writter.println("},");
-						writter.println("{");
-						writter.println("lat: " + vertice.darLatitud()+ ",");
-						writter.println("lng: " + vertice.darLongitud());
-						writter.println("}");
-						writter.println("];");
-						writter.println("path = new google.maps.Polyline({");
-						writter.println("path: line,");
-						writter.println("strokeColor: '#FF0000',");
-						writter.println("strokeWeight: 2");
-						writter.println("});");
-						writter.println("path.setMap(map);");
+						writer.println("line = [");
+						writer.println("{");
+						writer.println("lat: " + vertice.darLatitud() + ",");
+						writer.println("lng: " + vertice.darLongitud());
+						writer.println("},");
+						writer.println("{");
+						writer.println("lat: " + arco.darDestino().darLatitud()+ ",");
+						writer.println("lng: " + arco.darDestino().darLongitud());
+						writer.println("}");
+						writer.println("];");
+						writer.println("path = new google.maps.Polyline({");
+						writer.println("path: line,");
+						writer.println("strokeColor: '#FF0000',");
+						writer.println("strokeWeight: 2");
+						writer.println("});");
+						writer.println("path.setMap(map);");
 						contador++;
 						System.out.println(contador);
 
@@ -213,13 +216,13 @@ public class MVCModelo<K> {
 
 		}
 
-		writter.println("}");
-		writter.println("</script>");
-		writter.println("<script async defer src=\"https://maps.googleapis.com/maps/api/js?key=&callback=initMap\">");
-		writter.println("</script>");
-		writter.println("</body>");
-		writter.println("</html>");
-		writter.close();
+		writer.println("}");
+		writer.println("</script>");
+		writer.println("<script async defer src=\"https://maps.googleapis.com/maps/api/js?key=&callback=initMap\">");
+		writer.println("</script>");
+		writer.println("</body>");
+		writer.println("</html>");
+		writer.close();
 		System.out.println("Carga completada");
 
 	}
