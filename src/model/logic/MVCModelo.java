@@ -6,7 +6,9 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.ListIterator;
 
 import javax.management.Query;
 import model.data_structures.Grafos.Arco;
@@ -90,7 +92,7 @@ public class MVCModelo<K> {
 			lineaActual3 = leer3.readLine();
 		}
 		System.out.println("Se crearon " + cantidadArcos + " arcos");
-		crearArchivo();
+		crearArchivoHTML();
 	}
 	
 	public void calcularPesos()
@@ -133,6 +135,19 @@ public class MVCModelo<K> {
 		}
 		
 	}
+	
+	
+	public void persistirGrafoJSON()
+	{
+		
+	}
+	
+	public void cargarGrafoJSON(String pRutaJSON)
+	{
+		
+	}
+	
+	
 
 	public void crearArchivoHTML() throws IOException
 	{
@@ -183,20 +198,22 @@ public class MVCModelo<K> {
 		{
 			if(vertice!=null)
 			{
-				Arco arcos[] = new Arco[vertice.darArcos().size()];
-				arcos = (Arco[]) vertice.darArcos().toArray();
-				for(Arco<Integer> arco : arcos)
+				LinkedList arcos = vertice.darArcos();
+				Iterator it = arcos.iterator();
+				while(it.hasNext())
 				{
-					if(arco != null)
+					Arco actual =  (Arco) it.next();
+					if(it != null)
 					{
+						
 						writer.println("line = [");
 						writer.println("{");
 						writer.println("lat: " + vertice.darLatitud() + ",");
 						writer.println("lng: " + vertice.darLongitud());
 						writer.println("},");
 						writer.println("{");
-						writer.println("lat: " + arco.darDestino().darLatitud()+ ",");
-						writer.println("lng: " + arco.darDestino().darLongitud());
+						writer.println("lat: " + actual.darDestino().darLatitud()+ ",");
+						writer.println("lng: " + actual.darDestino().darLongitud());
 						writer.println("}");
 						writer.println("];");
 						writer.println("path = new google.maps.Polyline({");
@@ -210,7 +227,7 @@ public class MVCModelo<K> {
 
 					}
 
-
+					
 				}
 			}
 

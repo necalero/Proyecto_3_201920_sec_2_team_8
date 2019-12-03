@@ -19,10 +19,12 @@ public class Vertice
 		MOVEMENT_ID = mov_id;
 		marked = false;
 		this.id = id;
+		edgeTo = new LinkedList<>();
 	}
-	public void anadirArco(Vertice V, double pDistancia, double pTiempo)
+	public void anadirArco(Vertice pV, double pDistancia, double pTiempo)
 	{
-		edgeTo.add(new Arco(this, V, pDistancia, pTiempo));
+		Arco arco = new Arco(this, pV, pDistancia, pTiempo);
+		edgeTo.add(arco);
 	}
 	public void eliminarArco(Vertice V)
 	{
