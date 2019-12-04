@@ -7,15 +7,29 @@ public class Arco<K> {
 	private double distancia;
 	private double tiempo;
 	private double velocidad;
+	private boolean marked;
 	public Arco(Vertice pOrigen, Vertice pDestino, double pDistancia, double pTiempo) {
 		v1 = pOrigen;
 		v2 = pDestino;
 		distancia = pDistancia;
 		tiempo = pTiempo;
 		velocidad = pDistancia/pTiempo;
+		marked = false;
 	}
 
+	public void marcar()
+	{
+		marked = true;
+	}
+	public void desmarcar()
+	{
+		marked = false;
+	}
 	
+	public boolean isMarked()
+	{
+		return marked;
+	}
 	public double darDistancia() 
 	{
 		return distancia;

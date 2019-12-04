@@ -6,6 +6,7 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.text.DecimalFormat;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.ListIterator;
@@ -18,25 +19,52 @@ import model.data_structures.Grafos.Vertice;
 import model.data_structures.Haversine;
 import model.data_structures.Queue;
 
-/**
- * Definicion del modelo del mundo
- *
- */
-
 public class MVCModelo<K> {
 
-	private GrafoNoDirigido grafo;
 
-	@SuppressWarnings({ "static-access", "unchecked" })
+	//------------------------------------------------------------------------------
+	//               Constantes
+	//------------------------------------------------------------------------------
+	
+	private static String rutaArcos = "./data/bogota_arcos.txt";
+	private static String rutaVertices = "./data/bogota_vertices.txt";
+	
+	
+	
+	//------------------------------------------------------------------------------
+	//               Atributos
+	//------------------------------------------------------------------------------
+	private GrafoNoDirigido grafo;
+	private int cantidad = 0;
+	private int contador = 0;
+	private int cantidadVertices = 0;
+	private int cantidadArcos = 0;
+	private short lol;
+
+	//------------------------------------------------------------------------------
+	//               Constructor
+	//------------------------------------------------------------------------------
+	/**
+	 * Constructor
+	 * @throws IOException
+	 */
 	public MVCModelo() throws IOException
 	{
-		String txtArcos = "./data/bogota_arcos.txt";
-		String txtVertices = "./data/bogota_vertices.txt";
+		cantidad = 0;
+		contador = 0;
+		cantidadVertices = 0;
+		cantidadArcos = 0;
+		lol = 0;
 
-		int cantidad = 0;
-		int contador = 0;
+	}
+	
+	//------------------------------------------------------------------------------
+	//               Metodos
+	//------------------------------------------------------------------------------
+	public void cargar() throws IOException
+	{
 
-		FileReader lector2 = new FileReader(txtVertices);
+		FileReader lector2 = new FileReader(rutaVertices);
 		BufferedReader leer2 = new BufferedReader(lector2);
 		String lineaActual2 = leer2.readLine();
 		while(lineaActual2 != "" && lineaActual2 != null)
@@ -46,10 +74,10 @@ public class MVCModelo<K> {
 
 			lineaActual2 = leer2.readLine();
 		}
-		int cantidadVertices = 0;
+
 
 		grafo = new GrafoNoDirigido(cantidad);
-		FileReader lector = new FileReader(txtVertices);
+		FileReader lector = new FileReader(rutaVertices);
 		BufferedReader leer = new BufferedReader(lector);
 		String lineaActual = leer.readLine();
 		while(lineaActual != "" && lineaActual != null)
@@ -67,10 +95,7 @@ public class MVCModelo<K> {
 			}
 			lineaActual = leer.readLine();
 		}
-		System.out.println("Se crearon " + cantidadVertices + " vértices");
-
-		int cantidadArcos = 0;
-		FileReader lector3 = new FileReader(txtArcos);
+		FileReader lector3 = new FileReader(rutaArcos);
 		BufferedReader leer3 = new BufferedReader(lector3);
 		String lineaActual3 = leer3.readLine();
 		while(lineaActual3 != "" && lineaActual3 != null)
@@ -91,8 +116,9 @@ public class MVCModelo<K> {
 
 			lineaActual3 = leer3.readLine();
 		}
+		
+		System.out.println("Se crearon " + cantidadVertices + " vértices");
 		System.out.println("Se crearon " + cantidadArcos + " arcos");
-		crearArchivoHTML();
 	}
 	
 	public void calcularPesos()
@@ -194,37 +220,58 @@ public class MVCModelo<K> {
 		writer.println("});");
 		writer.println("var line;");
 		writer.println("var path;");
+		
 		for(Vertice vertice: grafo.darVertices())
 		{
 			if(vertice!=null)
 			{
+				
+
 				LinkedList arcos = vertice.darArcos();
+				
 				Iterator it = arcos.iterator();
+				
+				
 				while(it.hasNext())
 				{
+					
 					Arco actual =  (Arco) it.next();
-					if(it != null)
+					if(it != null&&!actual.isMarked())
 					{
 						
 						writer.println("line = [");
 						writer.println("{");
 						writer.println("lat: " + vertice.darLatitud() + ",");
+						
 						writer.println("lng: " + vertice.darLongitud());
+						
 						writer.println("},");
 						writer.println("{");
 						writer.println("lat: " + actual.darDestino().darLatitud()+ ",");
+						
 						writer.println("lng: " + actual.darDestino().darLongitud());
+						
 						writer.println("}");
 						writer.println("];");
 						writer.println("path = new google.maps.Polyline({");
 						writer.println("path: line,");
 						writer.println("strokeColor: '#FF0000',");
-						writer.println("strokeWeight: 2");
+						writer.println("strokeWeight: 1");
 						writer.println("});");
 						writer.println("path.setMap(map);");
 						contador++;
-						System.out.println(contador);
-
+						double porcentajeCarga = (((double)contador)/((double)grafo.E()))*100;
+						DecimalFormat perc = new DecimalFormat("###.##");
+						if(lol==0)
+						{
+							System.out.println(perc.format(porcentajeCarga)+"%");
+						}
+						lol = (short) ((short) (lol+1)%3000);
+						if(actual.darDestino().buscarArcoA(vertice)!=null)
+						{
+							actual.darDestino().buscarArcoA(vertice).marcar();
+						}
+						
 					}
 
 					
@@ -240,12 +287,15 @@ public class MVCModelo<K> {
 		writer.println("</body>");
 		writer.println("</html>");
 		writer.close();
-		System.out.println("Carga completada");
+		grafo.desmarcarTodosLosArcos();
+		System.out.println("Se genero el archivo, lo podrá encontrar en la carpeta data.");
 
 	}
 
 
-
+	//------------------------------------------------------------------------------
+	//               Main
+	//------------------------------------------------------------------------------
 	public static void main(String[] args) throws IOException {
 		MVCModelo modelo = new MVCModelo();
 	}

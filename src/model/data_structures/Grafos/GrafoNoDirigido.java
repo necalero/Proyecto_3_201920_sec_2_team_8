@@ -52,11 +52,16 @@ public class GrafoNoDirigido<K, V>
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public void addEdge(int source, int destination, double distancia, double tiempo ) 
 	{
+		
 		Vertice V1 = (Vertice) vertices.get(source);
 		Vertice V2 = (Vertice) vertices.get(destination);
-		V1.anadirArco(V2, distancia, tiempo);
-		V2.anadirArco(V1, distancia, tiempo);
-		numVertices++;
+		if(V1.buscarArcoA(V2)==null&&V2.buscarArcoA(V1)==null)
+		{
+			V1.anadirArco(V2, distancia, tiempo);
+			V2.anadirArco(V1, distancia, tiempo);
+			numArcos++;
+		}
+		
 
 	}
 
@@ -73,7 +78,7 @@ public class GrafoNoDirigido<K, V>
 	public double[] getInfoVertex(K idVertex)
 	{
 		double aRetornar[] = new double[4];
-		aRetornar[0] = ((Vertice) vertices.get(idVertex)).darID();
+		aRetornar[0] = ((Vertice) vertices.get(idVertex)).darId();
 		aRetornar[1] = ((Vertice) vertices.get(idVertex)).darLongitud();
 		aRetornar[2] = ((Vertice) vertices.get(idVertex)).darLatitud();
 		aRetornar[3] = ((Vertice) vertices.get(idVertex)).darMOVEMENT_ID();
@@ -250,6 +255,15 @@ public class GrafoNoDirigido<K, V>
 	public Vertice[] darVertices()
 	{
 		return vertices.darData();
+	}
+	
+	public void desmarcarTodosLosArcos()
+	{
+		for(Vertice vertice : darVertices())
+		{
+			if(vertice!=null)
+			vertice.desmarcarTodosArcos();
+		}
 	}
 
 	

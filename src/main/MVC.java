@@ -7,10 +7,10 @@ public class MVC {
 	
 	public static void main(String[] args) 
 	{
-		Controller controler;
+		Controller controller;
 		try {
-			controler = new Controller();
-			controler.run();
+			controller = new Controller();
+			controller.run();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

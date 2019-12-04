@@ -1,5 +1,6 @@
 package model.data_structures.Grafos;
 
+import java.util.Iterator;
 import java.util.LinkedList;
 
 public class Vertice
@@ -119,6 +120,19 @@ public class Vertice
 	public LinkedList darArcos()
 	{
 		return edgeTo;
+	}
+	
+	
+	public void desmarcarTodosArcos()
+	{
+		Iterator it = edgeTo.iterator();
+		
+		
+		while(it.hasNext())
+		{
+			Arco actual =  (Arco) it.next();
+			actual.desmarcar();
+		}
 	}
 	
 }

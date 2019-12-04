@@ -15,6 +15,8 @@ public class Controller {
 
 	/* Instancia de la Vista */
 	private MVCView view;
+
+	private boolean cargado;
 	
 	/**
 	 * Crear la vista y el modelo del proyecto
@@ -23,29 +25,47 @@ public class Controller {
 	public Controller() throws IOException {
 		view = new MVCView();
 		modelo = new MVCModelo();
+		cargado = false;
 	}
 
 	public void run() {
 		Scanner lector = new Scanner(System.in);
 		boolean fin = false;
-		String dato = "";
-		String[] datos;
-
 		while (!fin) {
 			view.printMenu();
-
 			int option = lector.nextInt();
 			switch (option) {
 			case 1:
+				view.printMessage("Usted ha escogido la opcion 1. Cargar los datos");
+				try 
+				{
+					modelo.cargar();
+					cargado = true;
+				} 
+				catch (IOException e) 
+				{				
+					e.printStackTrace();
+				}
 				break;
-			case 2:
-				break;
-			case 3:
-				break;
-			case 4:
-				break;
+
 			case 5:
-				System.out.println(" Adios");
+				view.printMessage("Usted ha escogido la opcion 5. Generar archivo html");
+				if(cargado==true)
+				{
+					try {
+						modelo.crearArchivoHTML();
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				}
+				else
+				{
+					view.printMessage("Se deben cargar los archivos antes de generar el HTML");
+				}
+
+				break;
+			case 10000:
 				lector.close();
 				fin = true;
 				break;
