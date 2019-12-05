@@ -71,11 +71,15 @@ public class Vertice
 	public void setDistanciaArco(Vertice V, double pDistancia)
 	{
 		buscarArcoA(V).setDistancia(pDistancia);
+		buscarArcoA(V).actualizarVelocidad();
 	}
 	public void setTiempoArco(Vertice V, double pTiempo)
 	{
 		buscarArcoA(V).setTiempo(pTiempo);
+		buscarArcoA(V).actualizarVelocidad();
 	}
+	
+	
 
 	public Arco buscarArcoA(Vertice V)
 	{

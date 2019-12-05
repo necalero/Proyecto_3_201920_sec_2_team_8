@@ -218,11 +218,15 @@ public class GrafoNoDirigido<K, V>
 		int cantidad = 0;
 		for(Vertice v : todos)
 		{
-			if(!v.isMarked())
+			if(v!=null)
 			{
-				cantidad++;
-				DepthFirstSearch(v);
+				if(!v.isMarked())
+				{
+					cantidad++;
+					DepthFirstSearch(v);
+				}
 			}
+			
 		}
 		uncheck();
 		return cantidad;

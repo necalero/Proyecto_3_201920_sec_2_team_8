@@ -17,6 +17,7 @@ import model.data_structures.Grafos.GrafoNoDirigido;
 
 import model.data_structures.Grafos.Vertice;
 import model.data_structures.Haversine;
+import model.data_structures.MaxPQ;
 import model.data_structures.Queue;
 
 public class MVCModelo<K> {
@@ -127,11 +128,17 @@ public class MVCModelo<K> {
 		{
 			
 			if(vertice !=null)
-			{
-				Arco arcos[] = new Arco[vertice.darArcos().size()];
-				arcos = (Arco[]) vertice.darArcos().toArray();
-				for(Arco arco : arcos)
+			{		
+				
+				LinkedList arcos = vertice.darArcos();
+				
+				Iterator it = arcos.iterator();
+				
+				
+				while(it.hasNext())
 				{
+					Arco arco =  (Arco) it.next();
+				
 					if(arco !=null)
 					{
 						double lat1 = vertice.darLatitud();
@@ -175,9 +182,9 @@ public class MVCModelo<K> {
 	
 	
 
-	public void crearArchivoHTML() throws IOException
+	public void crearArchivoHTML(String pNombreArchivo) throws IOException
 	{
-		String ruta = "./data/mapa.html";
+		String ruta = "./data/"+pNombreArchivo+".html";
 		int contador = 0;
 		PrintWriter writer = null;
 		try
@@ -189,91 +196,108 @@ public class MVCModelo<K> {
 		writer.println("<!DOCTYPE html>");
 		writer.println("<html>");
 		writer.println("<head>");
-		writer.println("<meta name=\"view\" content=\"initial-scale=1.0, user-scalable=no\">");
-		writer.println("<meta charset=\"utf-8\">");
-		writer.println("<title>Mapa Proyecto 3</title>");
-		writer.println("<style>");
-		writer.println("#map {");
-		writer.println("height: 100%;");
-		writer.println("}");
-		writer.println("html,");
-		writer.println("body {");
-		writer.println("height: 100%;");
-		writer.println("margin: 0;");
-		writer.println("padding: 0;");
-		writer.println("}");
-		writer.println("</style>");
+		writer.println("  <meta name=\"viewport\" content=\"initial-scale=1.0, user-scalable=no\">");
+		writer.println("  <meta charset=\"utf-8\">");
+		writer.println("  <title>cale</title>");
+		writer.println("  <style>");
+		writer.println("    #map {");
+		writer.println("      height: 100%;");
+		writer.println("    }");
+		writer.println("    html,");
+		writer.println("    body {");
+		writer.println("      height: 100%;");
+		writer.println("      margin: 0;");
+		writer.println("      padding: 0;");
+		writer.println("    }");
+		writer.println("  </style>");
 		writer.println("</head>");
+
 		
 		
 		writer.println("<body>");
-		writer.println("<div id=\"map\"></div>");
-		writer.println("<script>");
-		writer.println("function initMap() {");
-		writer.println("var map = new google.maps.Map(document.getElementById('map'), {");
-		writer.println("zoom: 11,");
+		writer.println("  <div id=\"map\"></div>");
+		writer.println("  <script>");
+		writer.println("    function initMap() {");
+		writer.println("      var map = new google.maps.Map(document.getElementById('map'), {");
+		writer.println("        zoom: 15.5,");
 		writer.println("center: {");
-		writer.println("lat: 4.65,");
-		writer.println("lng: -74.1");
+		writer.println("lat: 4.609537,");
+		writer.println("lng: -74.078715");
 		writer.println("},");
 		writer.println("mapTypeId: 'roadmap'");
 		writer.println("});");
 		writer.println("var line;");
 		writer.println("var path;");
 		
+		
 		for(Vertice vertice: grafo.darVertices())
 		{
 			if(vertice!=null)
 			{
 				
-
-				LinkedList arcos = vertice.darArcos();
-				
-				Iterator it = arcos.iterator();
-				
-				
-				while(it.hasNext())
+				double latV= vertice.darLatitud();
+				double longV= vertice.darLongitud();
+				if(latV<=4.621360&&latV>=4.597714&&longV<=-74.062707&&longV>=-74.094723)
 				{
 					
-					Arco actual =  (Arco) it.next();
-					if(it != null&&!actual.isMarked())
+					writer.println("	  var circle = new google.maps.Circle ({");
+					writer.println("		map: map,");
+					writer.println("		center: new google.maps.LatLng("+latV+","+longV+"),");
+					writer.println("		radius : 10,");
+					writer.println("		strokeColor : '#000000',");
+					writer.println("		fillColor : 'blue'");
+					writer.println("		});");
+					
+					LinkedList arcos = vertice.darArcos();
+					
+					Iterator it = arcos.iterator();
+					
+					
+					while(it.hasNext())
 					{
 						
-						writer.println("line = [");
-						writer.println("{");
-						writer.println("lat: " + vertice.darLatitud() + ",");
+						Arco actual =  (Arco) it.next();
+						double latVDest= actual.darDestino().darLatitud();
+						double longVDest= actual.darDestino().darLongitud();
 						
-						writer.println("lng: " + vertice.darLongitud());
-						
-						writer.println("},");
-						writer.println("{");
-						writer.println("lat: " + actual.darDestino().darLatitud()+ ",");
-						
-						writer.println("lng: " + actual.darDestino().darLongitud());
-						
-						writer.println("}");
-						writer.println("];");
-						writer.println("path = new google.maps.Polyline({");
-						writer.println("path: line,");
-						writer.println("strokeColor: '#FF0000',");
-						writer.println("strokeWeight: 1");
-						writer.println("});");
-						writer.println("path.setMap(map);");
-						contador++;
-						double porcentajeCarga = (((double)contador)/((double)grafo.E()))*100;
-						DecimalFormat perc = new DecimalFormat("###.##");
-						if(lol==0)
+						if(it != null&&!actual.isMarked()&&(latVDest<=4.621360&&latVDest>=4.597714&&longVDest<=-74.062707&&longVDest>=-74.094723))
 						{
-							System.out.println(perc.format(porcentajeCarga)+"%");
-						}
-						lol = (short) ((short) (lol+1)%3000);
-						if(actual.darDestino().buscarArcoA(vertice)!=null)
-						{
-							actual.darDestino().buscarArcoA(vertice).marcar();
-						}
-						
+							
+							
+							writer.println("line = [{");
+							writer.println("lat: " + latV + ",");
+							writer.println("lng: " + longV);
+							
+							writer.println("},");
+							writer.println("{");
+							writer.println("lat: " + latVDest + ",");
+							
+							writer.println("lng: " + longVDest);
+							
+							writer.println("}");
+							writer.println("];");
+							writer.println("path = new google.maps.Polyline({");
+							writer.println("path: line,");
+							writer.println("strokeColor: '#FF0000',");
+							writer.println("strokeWeight: 1");
+							writer.println("});");
+							writer.println("path.setMap(map);");
+							contador++;
+							double porcentajeCarga = (((double)contador)/((double)grafo.E()))*100;
+							DecimalFormat perc = new DecimalFormat("###.##");
+							if(lol==0)
+							{
+								System.out.println(perc.format(porcentajeCarga)+"%");
+							}
+							lol = (short) ((short) (lol+1)%3000);
+							if(actual.darDestino().buscarArcoA(vertice)!=null)
+							{
+								actual.darDestino().buscarArcoA(vertice).marcar();
+							}
+						}				
 					}
-
+					
+					
 					
 				}
 			}
@@ -291,7 +315,85 @@ public class MVCModelo<K> {
 		System.out.println("Se genero el archivo, lo podrá encontrar en la carpeta data.");
 
 	}
-
+	
+	
+	/**
+	 * Dada una localización geográfica con latitud y longitud, encontrar el Id del Vértice de la malla  vial  más  cercano  por  distancia  Haversine. 
+	 * @param pLat	Latitud
+	 * @param pLong Longitud
+	 * @return Vertice más cercano a ubicacion dada
+	 */
+	public Vertice encontrarVerticeMasCercano(double pLat, double pLong)
+	{
+		//TODO: metodo
+		return null;
+	}
+	
+	/**                                         A4
+	 * Encontrar el camino de costo mínimo (menor tiempo promedio según Uber en la ruta) para 
+	 * un viaje entre dos localizaciones geográficas de la ciudad ((lat,long) origen, (lat, long) destino),
+	 * ingresados por el usuario. 
+	 * 
+	 * Mapa creado: camino  resultante  en  Google  Maps  (incluyendo  la ubicación de inicio y la ubicación de destino).
+	 * 
+	 * @param pLatOrigen
+	 * @param pLongOrigen
+	 * @param pLatDestino
+	 * @param pLongDestino
+	 * @return Array con los ids de los vertices a seguir.
+	 */
+	public int[] encontrarCaminoCostoMinimo(double pLatOrigen,double pLongOrigen, double pLatDestino, double pLongDestino)
+	{
+		//TODO : metodo
+		return null;
+	}
+	
+	
+	/**											A5
+	 * Determinar los nvértices con menor velocidadpromedio en la ciudad de Bogotá.
+	 * Siendo la velocidad promedio de un vértice v,el promedio de las velocidadesde todos sus arcos.
+	 * 
+	 * @param pN nvértices con menor velocidadpromedio en la ciudad de Bogotá.
+	 * 
+	 * 
+	 * @return Max priority queue con los n vertices con menor velocidad promedio.
+	 * 
+	 * Mapa creado: marca la localización de los n vértices resultantes en un mapa en Google Maps usando un color 1. 
+	 * Destaque la componente conectada más grande (con más vértices) usando un color 2. 
+	 * Para esta componente muestra sus vértices y sus arcos.
+	 * 
+	 * 
+	 */
+	public MaxPQ verticesConMenorVelocidad(int pN)
+	{
+		//TODO: metodo
+		return null;
+	}
+	
+	
+	
+	/**											A6
+	 * Calcula  un  árbol  de  expansión  mínima  (MST)  con  criterio  distancia,  utilizando 
+	 * el algoritmo de Prim, aplicado al componente conectado (subgrafo) más grande de la malla
+	 * vial de Bogotá.
+	 * @return
+	 */
+	public Iterable<K> distanciaMSTSubgrafoMayor()
+	{
+		//TODO: metodo
+		return null;
+	}
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
 
 	//------------------------------------------------------------------------------
 	//               Main
