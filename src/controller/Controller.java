@@ -79,7 +79,10 @@ public class Controller {
 					{
 						view.printMessage("No se han modificado los pesos de los arcos, por lo que este paso será inutil.");
 					}
-					//TODO: Metodo para guardar en JSON
+					view.printMessage("Por favor inserte el nombre con el que desea guardar el archivo");
+					Scanner lectorJSON = new Scanner(System.in);
+					String nombreArchivo = lectorJSON.nextLine();
+					modelo.persistirGrafoJSON(nombreArchivo);
 					view.printMessage("Se guardo el grafo en la carpeta data.");
 				}
 				catch (Exception e)

@@ -2,19 +2,20 @@ package model.data_structures.Grafos;
 
 public class Arco<K> {
 
-	private Vertice v1;
-	private Vertice v2;
+	private int idV1;
+	private int idV2;
 	private double distancia;
 	private double tiempo;
 	private double velocidad;
 	private boolean marked;
-	public Arco(Vertice pOrigen, Vertice pDestino, double pDistancia, double pTiempo) {
-		v1 = pOrigen;
-		v2 = pDestino;
+	
+	public Arco(int pIDOrigen, int pIDDestino, double pDistancia, double pTiempo, boolean pMarked) {
+		idV1 = pIDOrigen;
+		idV2 = pIDDestino;
 		distancia = pDistancia;
 		tiempo = pTiempo;
 		actualizarVelocidad();
-		marked = false;
+		marked = pMarked;
 	}
 
 	public void marcar()
@@ -66,9 +67,9 @@ public class Arco<K> {
 		
 	}
 	
-	public Vertice darDestino()
+	public int darIdDestino()
 	{
-		return v2;
+		return idV2;
 	}
 	
 	

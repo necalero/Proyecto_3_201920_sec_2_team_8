@@ -3,7 +3,7 @@ package model.data_structures.Grafos;
 
 import model.logic.NoExisteException;
 
-public class HTLPGraphs <K ,V>
+public class HTLPGraphs 
 {
 
 	private int capacidad;
@@ -38,14 +38,23 @@ public class HTLPGraphs <K ,V>
 		}
 		
 	}
-
-	public int hash(K key)
+	
+	public HTLPGraphs(int pCapacidad, int pCantKeys, Integer[] pLlaves, Vertice[] pData)
 	{
+		capacidad = pCapacidad;
+		cantKeys = pCantKeys;
+		keys = pLlaves;
+		data = pData;
+	}
+
+	public int hash(int pKey)
+	{
+		Integer key = pKey;
 		int hash = (key.hashCode()&0x7fffffff)%capacidad;
 		return hash;
 	}
 
-	public void put(K Key, int pId, double pLon, double pLat, int pMovId)
+	public void put(int Key, int pId, double pLon, double pLat, int pMovId)
 	{
 		if(verificarCapacidadCarga())
 		{
@@ -71,7 +80,7 @@ public class HTLPGraphs <K ,V>
 		}
 	}
 	
-	public void put(K Key, Vertice value)
+	public void put(int Key, Vertice value)
 	{
 		if(verificarCapacidadCarga())
 		{
@@ -102,13 +111,13 @@ public class HTLPGraphs <K ,V>
 	 * @param Key
 	 * @return
 	 */
-	public V get(K Key)
+	public Vertice get(int Key)
 	{
 		for(int i = hash(Key);keys[i] != null; i = (i+1)%capacidad )
 		{
 			if(keys[i].equals(Key))
 			{
-				return (V) data[i];
+				return  data[i];
 			}
 		}
 
@@ -116,14 +125,15 @@ public class HTLPGraphs <K ,V>
 	}
 
 
-	public V delete(K Key) throws NoExisteException 
+	public Vertice delete(int pKey) throws NoExisteException 
 	{
-		if(!contains(Key)) 
+		Integer key = pKey;
+		if(!contains(key)) 
 		{
 			throw new NoExisteException("No existe el elemento a eliminar");
 		}
-		int i = hash(Key);
-		while (!Key.equals(keys[i]))
+		int i = hash(key);
+		while (!key.equals(keys[i]))
 		{
 			i = (i + 1) % capacidad;
 		}
@@ -132,7 +142,7 @@ public class HTLPGraphs <K ,V>
 		i = (i+1)% capacidad;
 		while(keys[i] != null)
 		{
-			K keyChange = (K) keys[i];
+			Integer keyChange = keys[i];
 			Vertice dataChange = (Vertice) data[i];
 			keys[i] = null;
 			data[i] = null;
@@ -146,7 +156,7 @@ public class HTLPGraphs <K ,V>
 
 
 
-	private boolean contains(K Key) {
+	private boolean contains(int Key) {
 		for(int i = hash(Key);keys[i] != null; i = (i+1)%capacidad )
 		{
 			if(keys[i].equals(Key))
@@ -162,13 +172,13 @@ public class HTLPGraphs <K ,V>
 	@SuppressWarnings("unchecked")
 	public void rehash(int cap)
 	{
-		HTLPGraphs<K, V> t;
+		HTLPGraphs t;
 		t = new HTLPGraphs(cap);
 		for (int i = 0; i < capacidad ; i++)
 		{
 			if(keys[i] != null)
 			{
-				K llave = (K) keys[i];
+				int llave = keys[i];
 				Vertice valor = (Vertice) data[i];
 				t.put(llave, valor);
 			}

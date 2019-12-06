@@ -1,6 +1,8 @@
 package model.logic;
 
 import java.io.BufferedReader;
+
+import com.google.gson.Gson;
 import com.opencsv.CSVReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
@@ -137,7 +139,8 @@ public class MVCModelo<K> {
 		for(String[] nextLine: csvreader)
 		{
 			UBERTrip actual = new UBERTrip(nextLine[0], nextLine[1],nextLine[2],nextLine[3], nextLine[4], nextLine[5], nextLine[6], "weekly");
-			uberTripsWeekly.put(i+"-"+nextLine[0]+"-"+nextLine[1], actual);
+			int key = Integer.parseInt(nextLine[0]);
+			uberTripsWeekly.put(key, actual);
 			i++;
 
 		}
@@ -171,10 +174,12 @@ public class MVCModelo<K> {
 
 					if(arco !=null)
 					{
+						Vertice vDestino = grafo.getVertex(arco.darIdDestino());
+						
 						double lat1 = vertice.darLatitud();
-						double lat2= arco.darDestino().darLatitud();
+						double lat2= vDestino.darLatitud();
 						double lon1= vertice.darLongitud();
-						double lon2= arco.darDestino().darLongitud();
+						double lon2= vDestino.darLongitud();
 						Haversine haversineC = new Haversine();
 						double haversineDistance = haversineC.distance(lat1, lon1, lat2, lon2);
 
@@ -188,7 +193,7 @@ public class MVCModelo<K> {
 							if(uberTripsWeekly.darData()[i]!=null)
 							{
 								UBERTrip actual = uberTripsWeekly.darData()[i];
-								if(actual.darSourceid()==vertice.darMOVEMENT_ID()&&actual.darDstid()==arco.darDestino().darMOVEMENT_ID())
+								if(actual.darSourceid()==vertice.darMOVEMENT_ID()&&actual.darDstid()==vDestino.darMOVEMENT_ID())
 								{
 									sumaTiempos += actual.darMean_travel_time();
 									cantidadTiempos++;
@@ -198,7 +203,7 @@ public class MVCModelo<K> {
 
 						if(sumaTiempos==0)
 						{
-							if(vertice.darMOVEMENT_ID()==arco.darDestino().darMOVEMENT_ID())
+							if(vertice.darMOVEMENT_ID()==vDestino.darMOVEMENT_ID())
 							{
 								costoTiempo = 10;	
 							}
@@ -211,8 +216,8 @@ public class MVCModelo<K> {
 						{
 							costoTiempo = sumaTiempos/cantidadTiempos;
 						}
-						vertice.setDistanciaArco(arco.darDestino(), haversineDistance);
-						vertice.setTiempoArco(arco.darDestino(), costoTiempo);
+						vertice.setDistanciaArco(arco.darIdDestino(), haversineDistance);
+						vertice.setTiempoArco(arco.darIdDestino(), costoTiempo);
 						
 					}
 
@@ -224,14 +229,32 @@ public class MVCModelo<K> {
 	}
 
 
-	public void persistirGrafoJSON()
+	public void persistirGrafoJSON(String pNombreArchivo)
 	{
-
+		String ruta = "./data/"+pNombreArchivo+".json";
+		Gson gson = new Gson();
+		String json = gson.toJson(grafo);
+		PrintWriter writer = null;
+		try
+		{
+			writer = new PrintWriter(ruta);
+		}catch (Exception e) {
+			e.printStackTrace();
+		}
+		writer.println(json);
 	}
 
-	public void cargarGrafoJSON(String pRutaJSON)
+	public void cargarGrafoJSON(String pRutaJSON) throws IOException
 	{
-
+		Gson gson = new Gson();
+		FileReader reader = new FileReader(pRutaJSON);
+		BufferedReader read = new BufferedReader(reader);
+		String json = read.readLine();
+		
+		gson.fromJson(json, GrafoNoDirigido.class);
+		read.close();
+		reader.close();
+		
 	}
 
 
@@ -311,8 +334,11 @@ public class MVCModelo<K> {
 					{
 
 						Arco actual =  (Arco) it.next();
-						double latVDest= actual.darDestino().darLatitud();
-						double longVDest= actual.darDestino().darLongitud();
+						
+						Vertice vDestino = grafo.getVertex(actual.darIdDestino());
+						
+						double latVDest= vDestino.darLatitud();
+						double longVDest= vDestino.darLongitud();
 
 						if(it != null&&!actual.isMarked()&&(latVDest<=4.621360&&latVDest>=4.597714&&longVDest<=-74.062707&&longVDest>=-74.094723))
 						{
@@ -344,9 +370,9 @@ public class MVCModelo<K> {
 								System.out.println(perc.format(porcentajeCarga)+"%");
 							}
 							lol = (short) ((short) (lol+1)%100);
-							if(actual.darDestino().buscarArcoA(vertice)!=null)
+							if(vDestino.buscarArcoA(vertice.darId())!=null)
 							{
-								actual.darDestino().buscarArcoA(vertice).marcar();
+								vDestino.buscarArcoA(vertice.darId()).marcar();
 							}
 						}				
 					}

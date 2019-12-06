@@ -19,7 +19,13 @@ public class GrafoNoDirigido<K, V>
 	 */
 	public GrafoNoDirigido(int n) {
 		numVertices = n;
-		vertices = new HTLPGraphs<>(n);
+		vertices = new HTLPGraphs(n);
+
+	}
+	public GrafoNoDirigido(int pNumVertices, int pNumArcos, HTLPGraphs pVertices) {
+		numVertices = pNumVertices;
+		numArcos = pNumArcos;
+		vertices = pVertices;
 
 	}
 
@@ -55,10 +61,10 @@ public class GrafoNoDirigido<K, V>
 		
 		Vertice V1 = (Vertice) vertices.get(source);
 		Vertice V2 = (Vertice) vertices.get(destination);
-		if(V1.buscarArcoA(V2)==null&&V2.buscarArcoA(V1)==null)
+		if(V1.buscarArcoA(source)==null&&V2.buscarArcoA(destination)==null)
 		{
-			V1.anadirArco(V2, distancia, tiempo);
-			V2.anadirArco(V1, distancia, tiempo);
+			V1.anadirArco(destination, distancia, tiempo);
+			V2.anadirArco(source, distancia, tiempo);
 			numArcos++;
 		}
 		
@@ -75,7 +81,7 @@ public class GrafoNoDirigido<K, V>
 	 * @return
 	 */
 	@SuppressWarnings("unchecked")
-	public double[] getInfoVertex(K idVertex)
+	public double[] getInfoVertex(int idVertex)
 	{
 		double aRetornar[] = new double[4];
 		aRetornar[0] = ((Vertice) vertices.get(idVertex)).darId();
@@ -91,7 +97,7 @@ public class GrafoNoDirigido<K, V>
 	 * @param infoVertex
 	 */
 	@SuppressWarnings("unchecked")
-	public void setInfoVertex(K idVertex, int id, double lon, double lat, int mov_id)
+	public void setInfoVertex(int idVertex, int id, double lon, double lat, int mov_id)
 	{
 		((Vertice) vertices.get(idVertex)).setInfo(id, lon, lat, mov_id);;
 	}
@@ -104,14 +110,14 @@ public class GrafoNoDirigido<K, V>
 	 * @return
 	 */
 	@SuppressWarnings("unchecked")
-	public double[] getCostArc(K idVertexIni, K idVertexFin)
+	public double[] getCostArc(int idVertexIni, int idVertexFin)
 	{
 		Vertice ini = (Vertice) vertices.get(idVertexIni);
 		Vertice fin = (Vertice) vertices.get(idVertexFin);
 		double aRetornar[] = new double[3];
-		aRetornar[0] = ini.darPesoDistancia(fin);
-		aRetornar[1] = ini.darPesoTiempo(fin);
-		aRetornar[2] = ini.darPesoVelocidad(fin);
+		aRetornar[0] = ini.darPesoDistancia(idVertexFin);
+		aRetornar[1] = ini.darPesoTiempo(idVertexFin);
+		aRetornar[2] = ini.darPesoVelocidad(idVertexFin);
 		return aRetornar;
 	}
 
@@ -122,15 +128,15 @@ public class GrafoNoDirigido<K, V>
 	 * @param cost
 	 */
 	@SuppressWarnings("unchecked")
-	public void setCostEdge(K idVertexIni, K idVertexFin, double Tiempo, double Distancia)
+	public void setCostEdge(int idVertexIni, int idVertexFin, double Tiempo, double Distancia)
 	{
 		Vertice ini = (Vertice) vertices.get(idVertexIni);
 		Vertice fin =  (Vertice) vertices.get(idVertexFin);
 
-		ini.setDistanciaArco(fin, Distancia);
-		ini.setTiempoArco(fin, Tiempo);
-		fin.setDistanciaArco(ini, Distancia);
-		fin.setTiempoArco(ini, Tiempo);
+		ini.setDistanciaArco(idVertexFin, Distancia);
+		ini.setTiempoArco(idVertexFin, Tiempo);
+		fin.setDistanciaArco(idVertexIni, Distancia);
+		fin.setTiempoArco(idVertexIni, Tiempo);
 	}
 
 	/**
@@ -139,12 +145,12 @@ public class GrafoNoDirigido<K, V>
 	 * @param infoVertex
 	 */
 	@SuppressWarnings("unchecked")
-	public void addVertex(K idVertex, double lat, double lon, int mov_id)
+	public void addVertex(int idVertex, double lat, double lon, int mov_id)
 	{
 		vertices.put(idVertex, new Vertice((int) idVertex, lon, lat, mov_id));
 	}
 	
-	public void addVertex(K idVertex, Vertice V)
+	public void addVertex(int idVertex, Vertice V)
 	{
 		vertices.put(idVertex, V);
 	}
@@ -154,10 +160,10 @@ public class GrafoNoDirigido<K, V>
 	 * @param idVertex
 	 * @return
 	 */
-	public Iterable <K> adj (K idVertex)
+	public int[] adj(int idVertex)
 	{
-		Iterable<int[]> lista = Arrays.asList(((Vertice) vertices.get(idVertex)).adj());
-		return (Iterable<K>) lista;
+		Vertice v = getVertex(idVertex);
+		return v.adj();
 	}
 
 	/**
@@ -180,26 +186,26 @@ public class GrafoNoDirigido<K, V>
 	 * @param s
 	 */
 	//Caso base
-	public void DepthFirstSearch(Vertice s)   
+	public void DepthFirstSearch(int vID)   
 	{        
-		((Vertice) vertices.get(s)).marcar();
-		dfs(s);
+		((Vertice) vertices.get(vID)).marcar();
+		dfs(vID);
 	}   
 	//Caso recursivo
 	@SuppressWarnings("unchecked")
-	private int dfs(Vertice v)   
+	private int dfs(int vID)   
 	{      
 		int cantMarcada = 0;
-		((Vertice) vertices.get(v)).marcar();      
+		((Vertice) vertices.get(vID)).marcar();      
 		cantMarcada++;   
-		Iterable<K> list = adj((K)((Integer) v.darId()));
+		int[] list = adj(vID);
 
-		for (K w : list)
+		for (int w : list)
 		{
-			Vertice actual = (Vertice) vertices.get(w);
-			if (!actual.isMarked())
+			Vertice adyActual = (Vertice) vertices.get(w);
+			if (!adyActual.isMarked())
 			{
-				dfs(actual);   
+				dfs(w);   
 			}
 		}
 		return cantMarcada;
@@ -223,7 +229,7 @@ public class GrafoNoDirigido<K, V>
 				if(!v.isMarked())
 				{
 					cantidad++;
-					DepthFirstSearch(v);
+					DepthFirstSearch(v.darId());
 				}
 			}
 			
@@ -238,21 +244,21 @@ public class GrafoNoDirigido<K, V>
 	 * @param idVertex
 	 * @return
 	 */
-	public Iterable<K> getCC(K idVertex)
+	public Iterable<K> getCC(int idVertex)
 	{
-		Vertice x = (Vertice) vertices.get(idVertex);
-		DepthFirstSearch(x);
+		DepthFirstSearch(idVertex);
 		Vertice[] todos = vertices.darData();
-		HTLPGraphs<K, V> ccDat = new HTLPGraphs<>(5);
+		HTLPGraphs ccDat = new HTLPGraphs(5);
 		for(Vertice vertice: todos)
 		{
 			if(vertice.isMarked())
 			{
-				ccDat.put((K)((Integer)vertice.darId()),(Vertice) vertice);
+				ccDat.put(((Integer)vertice.darId()),(Vertice) vertice);
 			}
 		}
 		K[] ccL = (K[]) ccDat.darKeys();
 		Iterable<K> cc = Arrays.asList(ccL);
+		uncheck();
 		return cc;
 	}
 	
