@@ -59,7 +59,7 @@ public class Arco<K> {
 
 	public void actualizarVelocidad() 
 	{
-		if(distancia!=-1&&tiempo!=-1)
+		if(distancia!=-1&&tiempo!=-1&&distancia!=0&&tiempo!=0)
 		{
 			velocidad= distancia/tiempo;
 		}

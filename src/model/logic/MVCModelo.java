@@ -1,6 +1,7 @@
 package model.logic;
 
 import java.io.BufferedReader;
+import com.opencsv.CSVReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
@@ -16,9 +17,12 @@ import model.data_structures.Grafos.Arco;
 import model.data_structures.Grafos.GrafoNoDirigido;
 
 import model.data_structures.Grafos.Vertice;
+import model.data_structures.Grafos.htlpUberTrips;
+import model.data_structures.HashTableLinearProbing;
 import model.data_structures.Haversine;
 import model.data_structures.MaxPQ;
 import model.data_structures.Queue;
+import model.data_structures.UBERTrip;
 
 public class MVCModelo<K> {
 
@@ -26,12 +30,13 @@ public class MVCModelo<K> {
 	//------------------------------------------------------------------------------
 	//               Constantes
 	//------------------------------------------------------------------------------
-	
+
 	private static String rutaArcos = "./data/bogota_arcos.txt";
 	private static String rutaVertices = "./data/bogota_vertices.txt";
-	
-	
-	
+	private static String rutaCSV = "./data/bogota-cadastral-2018-1-WeeklyAggregate.csv";
+
+
+
 	//------------------------------------------------------------------------------
 	//               Atributos
 	//------------------------------------------------------------------------------
@@ -41,6 +46,7 @@ public class MVCModelo<K> {
 	private int cantidadVertices = 0;
 	private int cantidadArcos = 0;
 	private short lol;
+	private htlpUberTrips uberTripsWeekly;
 
 	//------------------------------------------------------------------------------
 	//               Constructor
@@ -56,12 +62,15 @@ public class MVCModelo<K> {
 		cantidadVertices = 0;
 		cantidadArcos = 0;
 		lol = 0;
+		grafo = null;
+		uberTripsWeekly = null;
 
 	}
-	
+
 	//------------------------------------------------------------------------------
 	//               Metodos
 	//------------------------------------------------------------------------------
+	@SuppressWarnings("unchecked")
 	public void cargar() throws IOException
 	{
 
@@ -117,28 +126,49 @@ public class MVCModelo<K> {
 
 			lineaActual3 = leer3.readLine();
 		}
-		
+
+		CSVReader csvreader = null;
+		csvreader = new CSVReader(new FileReader(rutaCSV));
+		csvreader.readNext();
+		uberTripsWeekly = new htlpUberTrips<>(1000);
+
+		int i=0;
+
+		for(String[] nextLine: csvreader)
+		{
+			UBERTrip actual = new UBERTrip(nextLine[0], nextLine[1],nextLine[2],nextLine[3], nextLine[4], nextLine[5], nextLine[6], "weekly");
+			uberTripsWeekly.put(i+"-"+nextLine[0]+"-"+nextLine[1], actual);
+			i++;
+
+		}
+		csvreader.close();
+
+
 		System.out.println("Se crearon " + cantidadVertices + " vértices");
 		System.out.println("Se crearon " + cantidadArcos + " arcos");
 	}
-	
+
+
+	/**Calcula los pesos de los arcos
+	 * 
+	 */
 	public void calcularPesos()
 	{
 		for(Vertice vertice : grafo.darVertices())
 		{
-			
+
 			if(vertice !=null)
 			{		
-				
+
 				LinkedList arcos = vertice.darArcos();
-				
+
 				Iterator it = arcos.iterator();
-				
-				
+
+
 				while(it.hasNext())
 				{
 					Arco arco =  (Arco) it.next();
-				
+
 					if(arco !=null)
 					{
 						double lat1 = vertice.darLatitud();
@@ -147,40 +177,64 @@ public class MVCModelo<K> {
 						double lon2= arco.darDestino().darLongitud();
 						Haversine haversineC = new Haversine();
 						double haversineDistance = haversineC.distance(lat1, lon1, lat2, lon2);
-						
+
 						double costoTiempo = 0;
-						
-						if(vertice.darMOVEMENT_ID()==arco.darDestino().darMOVEMENT_ID())
+						double sumaTiempos = 0;
+						double cantidadTiempos = 0;
+
+						//Calcula el promedio de tiempo	de los viajes Uber reportados en el	trimestre donde	la zona origen y destino es la misma.	
+						for(int i = 0; i < uberTripsWeekly.darData().length; i++)
 						{
-							costoTiempo = 10;
+							if(uberTripsWeekly.darData()[i]!=null)
+							{
+								UBERTrip actual = uberTripsWeekly.darData()[i];
+								if(actual.darSourceid()==vertice.darMOVEMENT_ID()&&actual.darDstid()==arco.darDestino().darMOVEMENT_ID())
+								{
+									sumaTiempos += actual.darMean_travel_time();
+									cantidadTiempos++;
+								}
+							}
 						}
+
+						if(sumaTiempos==0)
+						{
+							if(vertice.darMOVEMENT_ID()==arco.darDestino().darMOVEMENT_ID())
+							{
+								costoTiempo = 10;	
+							}
+							else
+							{
+								costoTiempo = 100;	
+							}
+						}						
 						else 
 						{
-							costoTiempo = 100;
+							costoTiempo = sumaTiempos/cantidadTiempos;
 						}
 						vertice.setDistanciaArco(arco.darDestino(), haversineDistance);
 						vertice.setTiempoArco(arco.darDestino(), costoTiempo);
+						
 					}
-					
+
 				}
-				
+
 			}
 		}
-		
+
 	}
-	
-	
+
+
 	public void persistirGrafoJSON()
 	{
-		
+
 	}
-	
+
 	public void cargarGrafoJSON(String pRutaJSON)
 	{
-		
+
 	}
-	
-	
+
+
 
 	public void crearArchivoHTML(String pNombreArchivo) throws IOException
 	{
@@ -212,8 +266,8 @@ public class MVCModelo<K> {
 		writer.println("  </style>");
 		writer.println("</head>");
 
-		
-		
+
+
 		writer.println("<body>");
 		writer.println("  <div id=\"map\"></div>");
 		writer.println("  <script>");
@@ -228,18 +282,18 @@ public class MVCModelo<K> {
 		writer.println("});");
 		writer.println("var line;");
 		writer.println("var path;");
-		
-		
+
+
 		for(Vertice vertice: grafo.darVertices())
 		{
 			if(vertice!=null)
 			{
-				
+
 				double latV= vertice.darLatitud();
 				double longV= vertice.darLongitud();
 				if(latV<=4.621360&&latV>=4.597714&&longV<=-74.062707&&longV>=-74.094723)
 				{
-					
+
 					writer.println("	  var circle = new google.maps.Circle ({");
 					writer.println("		map: map,");
 					writer.println("		center: new google.maps.LatLng("+latV+","+longV+"),");
@@ -247,33 +301,33 @@ public class MVCModelo<K> {
 					writer.println("		strokeColor : '#000000',");
 					writer.println("		fillColor : 'blue'");
 					writer.println("		});");
-					
+
 					LinkedList arcos = vertice.darArcos();
-					
+
 					Iterator it = arcos.iterator();
-					
-					
+
+
 					while(it.hasNext())
 					{
-						
+
 						Arco actual =  (Arco) it.next();
 						double latVDest= actual.darDestino().darLatitud();
 						double longVDest= actual.darDestino().darLongitud();
-						
+
 						if(it != null&&!actual.isMarked()&&(latVDest<=4.621360&&latVDest>=4.597714&&longVDest<=-74.062707&&longVDest>=-74.094723))
 						{
-							
-							
+
+
 							writer.println("line = [{");
 							writer.println("lat: " + latV + ",");
 							writer.println("lng: " + longV);
-							
+
 							writer.println("},");
 							writer.println("{");
 							writer.println("lat: " + latVDest + ",");
-							
+
 							writer.println("lng: " + longVDest);
-							
+
 							writer.println("}");
 							writer.println("];");
 							writer.println("path = new google.maps.Polyline({");
@@ -289,16 +343,16 @@ public class MVCModelo<K> {
 							{
 								System.out.println(perc.format(porcentajeCarga)+"%");
 							}
-							lol = (short) ((short) (lol+1)%3000);
+							lol = (short) ((short) (lol+1)%100);
 							if(actual.darDestino().buscarArcoA(vertice)!=null)
 							{
 								actual.darDestino().buscarArcoA(vertice).marcar();
 							}
 						}				
 					}
-					
-					
-					
+
+
+
 				}
 			}
 
@@ -315,8 +369,8 @@ public class MVCModelo<K> {
 		System.out.println("Se genero el archivo, lo podrá encontrar en la carpeta data.");
 
 	}
-	
-	
+
+
 	/**
 	 * Dada una localización geográfica con latitud y longitud, encontrar el Id del Vértice de la malla  vial  más  cercano  por  distancia  Haversine. 
 	 * @param pLat	Latitud
@@ -328,7 +382,7 @@ public class MVCModelo<K> {
 		//TODO: metodo
 		return null;
 	}
-	
+
 	/**                                         A4
 	 * Encontrar el camino de costo mínimo (menor tiempo promedio según Uber en la ruta) para 
 	 * un viaje entre dos localizaciones geográficas de la ciudad ((lat,long) origen, (lat, long) destino),
@@ -347,8 +401,8 @@ public class MVCModelo<K> {
 		//TODO : metodo
 		return null;
 	}
-	
-	
+
+
 	/**											A5
 	 * Determinar los nvértices con menor velocidadpromedio en la ciudad de Bogotá.
 	 * Siendo la velocidad promedio de un vértice v,el promedio de las velocidadesde todos sus arcos.
@@ -369,9 +423,9 @@ public class MVCModelo<K> {
 		//TODO: metodo
 		return null;
 	}
-	
-	
-	
+
+
+
 	/**											A6
 	 * Calcula  un  árbol  de  expansión  mínima  (MST)  con  criterio  distancia,  utilizando 
 	 * el algoritmo de Prim, aplicado al componente conectado (subgrafo) más grande de la malla
@@ -383,17 +437,17 @@ public class MVCModelo<K> {
 		//TODO: metodo
 		return null;
 	}
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
+
+
+
+
+
+
+
+
+
+
+
 
 	//------------------------------------------------------------------------------
 	//               Main

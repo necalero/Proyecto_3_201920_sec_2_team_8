@@ -1,22 +1,23 @@
 package model.data_structures.Grafos;
 
-
+import model.data_structures.UBERTrip;
 import model.logic.NoExisteException;
 
-public class HTLPGraphs <K ,V>
+public class htlpUberTrips<K,V>
 {
+
 
 	private int capacidad;
 	private int cantKeys;
 	private Integer[] keys;
-	private Vertice[] data;
+	private UBERTrip[] data;
 
-	public HTLPGraphs(int m)
+	public htlpUberTrips(int m)
 	{
 		capacidad = m;
 		cantKeys = 0;
 		keys = new Integer[m];
-		data = new Vertice[m];
+		data = new UBERTrip[m];
 		for(int j = 0; j<capacidad; j++)
 		{
 			keys[j]= null;
@@ -24,12 +25,12 @@ public class HTLPGraphs <K ,V>
 		}
 	}
 	
-	public HTLPGraphs()
+	public htlpUberTrips()
 	{
 		capacidad = 11;
 		cantKeys = 0;
 		keys = new Integer[11];
-		data = new Vertice[11];
+		data = new UBERTrip[11];
 		
 		for(int j = 0; j<capacidad; j++)
 		{
@@ -45,33 +46,9 @@ public class HTLPGraphs <K ,V>
 		return hash;
 	}
 
-	public void put(K Key, int pId, double pLon, double pLat, int pMovId)
-	{
-		if(verificarCapacidadCarga())
-		{
-			rehash(capacidad*2);
-		}
-		else
-		{
-			int hash =  hash(Key);
-			int i;
-			for(i = hash;keys[i] != null; i = (i+1)%capacidad)
-			{
-				if(keys[i].equals(Key))
-				{				
-					data[i] = new Vertice((int) Key, pLon, pLat, pMovId);
-					return;
-				}
-			}
-			keys[i] = (Integer) Key;
-			data[i] = new Vertice((int) Key, pLon, pLat, pMovId);
-			cantKeys++;
 
-
-		}
-	}
 	
-	public void put(K Key, Vertice value)
+	public void put(K Key, UBERTrip pUberTrip)
 	{
 		if(verificarCapacidadCarga())
 		{
@@ -85,12 +62,12 @@ public class HTLPGraphs <K ,V>
 			{
 				if(keys[i].equals(Key))
 				{				
-					data[i] = value;
+					data[i] = pUberTrip;
 					return;
 				}
 			}
 			keys[i] = (Integer) Key;
-			data[i] = value;
+			data[i] = pUberTrip;
 			cantKeys++;
 
 
@@ -133,7 +110,7 @@ public class HTLPGraphs <K ,V>
 		while(keys[i] != null)
 		{
 			K keyChange = (K) keys[i];
-			Vertice dataChange = (Vertice) data[i];
+			UBERTrip dataChange = (UBERTrip) data[i];
 			keys[i] = null;
 			data[i] = null;
 			cantKeys--;
@@ -162,14 +139,14 @@ public class HTLPGraphs <K ,V>
 	@SuppressWarnings("unchecked")
 	public void rehash(int cap)
 	{
-		HTLPGraphs<K, V> t;
-		t = new HTLPGraphs(cap);
+		htlpUberTrips<K, V> t;
+		t = new htlpUberTrips(cap);
 		for (int i = 0; i < capacidad ; i++)
 		{
 			if(keys[i] != null)
 			{
 				K llave = (K) keys[i];
-				Vertice valor = (Vertice) data[i];
+				UBERTrip valor = (UBERTrip) data[i];
 				t.put(llave, valor);
 			}
 		}
@@ -183,7 +160,7 @@ public class HTLPGraphs <K ,V>
 		return keys;
 	}
 
-	public Vertice[] darData()
+	public UBERTrip[] darData()
 	{
 		
 		return data;
@@ -205,7 +182,6 @@ public class HTLPGraphs <K ,V>
 		}
 		return false;
 	}
-
 
 
 

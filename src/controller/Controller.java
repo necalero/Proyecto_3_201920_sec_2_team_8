@@ -109,7 +109,8 @@ public class Controller {
 				if(cargado==true)
 				{
 					view.printMessage("Ingrese el nombre del archivo a generar.");
-					String nombreArchivo = lector.nextLine();
+					Scanner lector2 = new Scanner(System.in);
+					String nombreArchivo = lector2.nextLine();
 					try {
 						modelo.crearArchivoHTML(nombreArchivo);
 					} catch (IOException e) {
