@@ -403,9 +403,8 @@ public class MVCModelo<K> {
 	 * @param pLong Longitud
 	 * @return Vertice más cercano a ubicacion dada
 	 */
-	public Vertice encontrarVerticeMasCercano(double pLat, double pLong)
+	public int encontrarIdVerticeMasCercano(double pLat, double pLong)
 	{
-		//TODO: metodo
 		Vertice[] vertices = grafo.darVertices();
 		double menorDistanciaHaversine = Double.POSITIVE_INFINITY;
 		Vertice vertMasCercano = null;
@@ -420,7 +419,7 @@ public class MVCModelo<K> {
 			}
 		}
 		
-		return null;
+		return vertMasCercano.darId();
 	}
 
 	/**                                         A4
