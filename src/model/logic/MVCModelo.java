@@ -406,6 +406,20 @@ public class MVCModelo<K> {
 	public Vertice encontrarVerticeMasCercano(double pLat, double pLong)
 	{
 		//TODO: metodo
+		Vertice[] vertices = grafo.darVertices();
+		double menorDistanciaHaversine = Double.POSITIVE_INFINITY;
+		Vertice vertMasCercano = null;
+		for(Vertice vertice: vertices)
+		{
+			Haversine haversine = new Haversine();
+			double distanciaActual = haversine.distance(vertice.darLatitud(), vertice.darLongitud(), pLat, pLong);
+			if(distanciaActual<menorDistanciaHaversine)
+			{
+				menorDistanciaHaversine = distanciaActual;
+				vertMasCercano = vertice;
+			}
+		}
+		
 		return null;
 	}
 
