@@ -1,0 +1,103 @@
+package model.data_structures.Grafos;
+
+import java.util.Stack;
+
+import model.data_structures.IndexMinPQ;
+
+public class DijkstraSP {
+
+	private Arco[] edgeTo;
+	private double[] distTo;
+	private IndexMinPQ<Double> pq; 
+	private String tipoPeso;
+
+
+
+	public DijkstraSP(GrafoNoDirigido G, int s, String pTipoPeso)
+	{      
+		tipoPeso = pTipoPeso;
+		edgeTo = new Arco[G.V()];  
+		distTo = new double[G.V()]; 
+		pq = new IndexMinPQ<Double>(G.V()); 
+		for (int v = 0; v < G.V(); v++)         
+			distTo[v] = Double.POSITIVE_INFINITY; 
+		distTo[s] = 0.0;     
+		pq.insert(s, 0.0); 
+		while (!pq.isEmpty())         
+			relax(G, pq.delMin());
+	}   
+	private void relax(GrafoNoDirigido G, int idVerticeOrigen)   
+	{      
+		for(int idVerticeDestino : G.adj(idVerticeOrigen))
+		{         
+			Vertice vDestActual = G.getVertex(idVerticeDestino);
+			Arco w = G.getVertex(idVerticeOrigen).buscarArcoA(idVerticeDestino);
+
+			if(tipoPeso.equals("tiempo"))
+			{
+				if (distTo[idVerticeDestino] > distTo[idVerticeOrigen] + w.darTiempo()) 
+				{            
+					distTo[idVerticeDestino] = distTo[idVerticeOrigen] + w.darTiempo();
+					edgeTo[idVerticeDestino] = w;       
+					if (pq.contains(idVerticeDestino)) pq.change(idVerticeDestino, distTo[idVerticeDestino]); 
+					else                pq.insert(idVerticeDestino, distTo[idVerticeDestino]);     
+				} 
+			}
+			else if(tipoPeso.equals("distancia"))
+			{
+				if (distTo[idVerticeDestino] > distTo[idVerticeOrigen] + w.darDistancia()) 
+				{            
+					distTo[idVerticeDestino] = distTo[idVerticeOrigen] + w.darDistancia();
+					edgeTo[idVerticeDestino] = w;       
+					if (pq.contains(idVerticeDestino)) pq.change(idVerticeDestino, distTo[idVerticeDestino]); 
+					else                pq.insert(idVerticeDestino, distTo[idVerticeDestino]);     
+				} 
+			}
+			else if(tipoPeso.equals("velocidad"))
+			{
+				if (distTo[idVerticeDestino] > distTo[idVerticeOrigen] + w.darVelocidad()) 
+				{            
+					distTo[idVerticeDestino] = distTo[idVerticeOrigen] + w.darVelocidad();
+					edgeTo[idVerticeDestino] = w;       
+					if (pq.contains(idVerticeDestino)) pq.change(idVerticeDestino, distTo[idVerticeDestino]); 
+					else                pq.insert(idVerticeDestino, distTo[idVerticeDestino]);     
+				} 
+			}
+
+		}
+	}   
+
+
+	public double distTo(int idVertice) 
+	{   
+		return distTo[idVertice];   
+	} 
+	public boolean hasPathTo(int idVertice) 
+	{   
+		return distTo[idVertice] < Double.POSITIVE_INFINITY;  
+	} 
+
+	public Arco buscarArcoA(int pIDV)
+	{
+		boolean seEncontro = false;
+		Arco aRetornar = null;
+		for(int i = 0; i < edgeTo.length&&!seEncontro; i++)
+		{
+			if(edgeTo[i].darIdDestino()==pIDV)
+			{
+				aRetornar = edgeTo[i];
+			}
+		}
+		return aRetornar;
+	}
+
+	public Iterable<Arco> pathTo(int idVertice)
+	{   
+		if (!hasPathTo(idVertice)) return null;
+		Stack<Arco> path = new Stack<Arco>(); 
+		for (Arco e = buscarArcoA(idVertice); e != null; e = buscarArcoA(e.darIdOrigen())) 
+			path.push(e); 
+		return path; 
+	}
+
+}

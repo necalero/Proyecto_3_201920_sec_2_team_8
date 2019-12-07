@@ -267,6 +267,15 @@ public class GrafoNoDirigido<K, V>
 		return vertices.darData();
 	}
 	
+	
+	public int[] dijkstra()
+	{
+		
+		return null;
+	}
+	
+	
+	
 	public void desmarcarTodosLosArcos()
 	{
 		for(Vertice vertice : darVertices())

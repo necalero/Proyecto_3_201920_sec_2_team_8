@@ -66,7 +66,10 @@ public class Arco<K> {
 		}
 		
 	}
-	
+	public int darIdOrigen() 
+	{
+		return idV1;
+	}
 	public int darIdDestino()
 	{
 		return idV2;
