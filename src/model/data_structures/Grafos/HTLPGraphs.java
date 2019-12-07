@@ -5,12 +5,12 @@ import model.logic.NoExisteException;
 
 public class HTLPGraphs 
 {
-
 	private int capacidad;
 	private int cantKeys;
 	private Integer[] keys;
 	private Vertice[] data;
 
+	
 	public HTLPGraphs(int m)
 	{
 		capacidad = m;

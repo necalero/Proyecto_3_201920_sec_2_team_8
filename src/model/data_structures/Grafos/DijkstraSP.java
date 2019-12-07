@@ -91,13 +91,26 @@ public class DijkstraSP {
 		return aRetornar;
 	}
 
-	public Iterable<Arco> pathTo(int idVertice)
+	public GrafoNoDirigido pathTo(int idVertice, GrafoNoDirigido g)
 	{   
-		if (!hasPathTo(idVertice)) return null;
-		Stack<Arco> path = new Stack<Arco>(); 
+		GrafoNoDirigido camino =null;
+		if (!hasPathTo(idVertice)) return camino;
+		else
+		{
+			camino = new GrafoNoDirigido<>();
+		}
+		 
 		for (Arco e = buscarArcoA(idVertice); e != null; e = buscarArcoA(e.darIdOrigen())) 
-			path.push(e); 
-		return path; 
+		{
+			Vertice x = g.getVertex(e.darIdDestino());
+			Vertice y = g.getVertex(e.darIdOrigen());
+			camino.addVertex(x.darId(), x);
+			camino.addVertex(y.darId(), y);
+			camino.addEdge(y.darId(), x.darId(), e.darDistancia(), e.darTiempo());
+			
+		}
+			
+		return camino; 
 	}
 
 }

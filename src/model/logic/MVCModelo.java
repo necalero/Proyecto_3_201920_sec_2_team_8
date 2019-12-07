@@ -1,7 +1,6 @@
 package model.logic;
 
 import java.io.BufferedReader;
-
 import com.google.gson.Gson;
 import com.opencsv.CSVReader;
 import java.io.FileNotFoundException;
@@ -14,11 +13,9 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.ListIterator;
 import java.util.Stack;
-
 import javax.management.Query;
 import model.data_structures.Grafos.Arco;
 import model.data_structures.Grafos.GrafoNoDirigido;
-
 import model.data_structures.Grafos.Vertice;
 import model.data_structures.Grafos.htlpUberTrips;
 import model.data_structures.HashTableLinearProbing;
@@ -260,8 +257,17 @@ public class MVCModelo<K> {
 
 
 
-	public void crearArchivoHTML(String pNombreArchivo, GrafoNoDirigido pGrafo) throws IOException
+	public void crearArchivoHTML(String pNombreArchivo, GrafoNoDirigido pGrafo, double pLatMin, double pLatMax, double pLongMin, double pLongMax) throws IOException
 	{
+		GrafoNoDirigido grafoAGraficar;
+		if(pGrafo==null)
+		{
+			grafoAGraficar = grafo;
+		}
+		else
+		{
+			grafoAGraficar = pGrafo;
+		}
 		String ruta = "./data/"+pNombreArchivo+".html";
 		int contador = 0;
 		PrintWriter writer = null;
@@ -308,14 +314,36 @@ public class MVCModelo<K> {
 		writer.println("var path;");
 
 
-		for(Vertice vertice: pGrafo.darVertices())
+		for(Vertice vertice: grafoAGraficar.darVertices())
 		{
 			if(vertice!=null)
 			{
 
 				double latV= vertice.darLatitud();
 				double longV= vertice.darLongitud();
-				if(latV<=4.621360&&latV>=4.597714&&longV<=-74.062707&&longV>=-74.094723)
+				//Default values: 4.621360||4.597714||-74.062707||-74.094723
+				
+				double latMin = 0;
+				double latMax = 0;
+				double longMin = 0;
+				double longMax = 0;
+				
+				if(pLatMax == -1&&pLatMin==-1&&pLongMax==-1&&pLongMin==-1)
+				{
+					latMin = 4.597714;
+					latMax = 4.621360;
+					longMin = -74.094723;
+					longMax = -74.062707;
+				}
+				else
+				{
+					latMin = pLatMin;
+					latMax = pLatMax;
+					longMin = pLongMin;
+					longMax = pLongMax;
+				}
+				
+				if(latV<=latMax&&latV>=latMin&&longV>=longMin&&longV<=longMax)
 				{
 
 					writer.println("	  var circle = new google.maps.Circle ({");
@@ -336,25 +364,20 @@ public class MVCModelo<K> {
 
 						Arco actual =  (Arco) it.next();
 						
-						Vertice vDestino = pGrafo.getVertex(actual.darIdDestino());
+						Vertice vDestino = grafoAGraficar.getVertex(actual.darIdDestino());
 						
 						double latVDest= vDestino.darLatitud();
 						double longVDest= vDestino.darLongitud();
 
-						if(it != null&&!actual.isMarked()&&(latVDest<=4.621360&&latVDest>=4.597714&&longVDest<=-74.062707&&longVDest>=-74.094723))
+						if(it != null&&!actual.isMarked()&&(latVDest<=latMax&&latVDest>=latMin&&longVDest>=longMin&&longVDest<=longMax))
 						{
-
-
 							writer.println("line = [{");
 							writer.println("lat: " + latV + ",");
 							writer.println("lng: " + longV);
-
 							writer.println("},");
 							writer.println("{");
 							writer.println("lat: " + latVDest + ",");
-
 							writer.println("lng: " + longVDest);
-
 							writer.println("}");
 							writer.println("];");
 							writer.println("path = new google.maps.Polyline({");
@@ -370,16 +393,13 @@ public class MVCModelo<K> {
 							{
 								System.out.println(perc.format(porcentajeCarga)+"%");
 							}
-							lol = (short) ((short) (lol+1)%100);
+							lol = (short) ((short) (lol+1)%10);
 							if(vDestino.buscarArcoA(vertice.darId())!=null)
 							{
 								vDestino.buscarArcoA(vertice.darId()).marcar();
 							}
 						}				
 					}
-
-
-
 				}
 			}
 
@@ -495,21 +515,13 @@ public class MVCModelo<K> {
 	 * @param pLongDestino
 	 * @return Array con los ids de los vertices a seguir.
 	 */
-	public Iterable<Integer> encontrarCaminoDistanciaMinimo(double pLatOrigen,double pLongOrigen, double pLatDestino, double pLongDestino)
+	public GrafoNoDirigido encontrarCaminoDistanciaMinimo(double pLatOrigen,double pLongOrigen, double pLatDestino, double pLongDestino)
 	{
 		//TODO : metodo
 		int vIdOrigen = encontrarIdVerticeMasCercano(pLatOrigen, pLongOrigen);
 		int vIdDestino = encontrarIdVerticeMasCercano(pLatDestino, pLongDestino);
-		Iterable camino = grafo.menorDistanciaA(vIdOrigen, vIdDestino);
-		Iterator it = camino.iterator();
-		Stack<Integer> idVertices = new Stack<Integer>();
-		while(it.hasNext())
-		{
-			Arco actual = (Arco) it.next();
-			int idVertice = actual.darIdOrigen();
-			idVertices.push(idVertice);
-		}
-		return idVertices;
+		GrafoNoDirigido camino = grafo.menorDistanciaA(vIdOrigen, vIdDestino);
+		return camino;
 	}
 	
 	/**											A8
@@ -535,7 +547,7 @@ public class MVCModelo<K> {
 		return alcanzables;
 	}
 
-	public 
+	
 
 
 

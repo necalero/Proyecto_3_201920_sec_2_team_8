@@ -11,8 +11,6 @@ public class GrafoNoDirigido<K, V>
 	private int numArcos;
 	private HTLPGraphs vertices;
 
-
-
 	/**
 	 * Crea un grafo No dirigido de tamaño n vértices y sin arcos
 	 * @param n Numero de Vertices
@@ -27,6 +25,11 @@ public class GrafoNoDirigido<K, V>
 		numArcos = pNumArcos;
 		vertices = pVertices;
 
+	}
+	public GrafoNoDirigido() 
+	{
+		numVertices = 0;
+		vertices = new HTLPGraphs();
 	}
 
 
@@ -152,8 +155,25 @@ public class GrafoNoDirigido<K, V>
 	
 	public void addVertex(int idVertex, Vertice V)
 	{
-		vertices.put(idVertex, V);
+		if(!contains(idVertex))
+		{
+			vertices.put(idVertex, V);
+		}
+		
 	}
+	
+	
+	public boolean contains(int pId)
+	{
+		boolean contains = false;
+		if(getVertex(pId)!=null)
+		{
+			contains = true;
+		}
+		return contains;
+	}
+	
+	
 
 	/**
 	 * Retorna los identificadores de los vértices adyacentes a idVertex.
@@ -262,21 +282,32 @@ public class GrafoNoDirigido<K, V>
 		return cc;
 	}
 	
+	/**
+	 * 
+	 * @return
+	 */
 	public Vertice[] darVertices()
 	{
 		return vertices.darData();
 	}
 	
-	
-	public Iterable<Arco> menorDistanciaA(int idVerticeOrigen, int idVerticeDestino)
+	/**
+	 * 
+	 * @param idVerticeOrigen
+	 * @param idVerticeDestino
+	 * @return
+	 */
+	public GrafoNoDirigido menorDistanciaA(int idVerticeOrigen, int idVerticeDestino)
 	{
 		DijkstraSP sp = new DijkstraSP(this, idVerticeOrigen, "distancia");
-		Iterable<Arco> aRetornar = sp.pathTo(idVerticeDestino);
+		GrafoNoDirigido aRetornar = sp.pathTo(idVerticeDestino, this);
 		return aRetornar;
 	}
 	
 	
-	
+	/**
+	 * 
+	 */
 	public void desmarcarTodosLosArcos()
 	{
 		for(Vertice vertice : darVertices())
