@@ -268,10 +268,11 @@ public class GrafoNoDirigido<K, V>
 	}
 	
 	
-	public int[] dijkstra()
+	public Iterable<Arco> menorDistanciaA(int idVerticeOrigen, int idVerticeDestino)
 	{
-		
-		return null;
+		DijkstraSP sp = new DijkstraSP(this, idVerticeOrigen, "distancia");
+		Iterable<Arco> aRetornar = sp.pathTo(idVerticeDestino);
+		return aRetornar;
 	}
 	
 	

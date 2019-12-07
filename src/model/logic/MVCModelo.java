@@ -13,6 +13,7 @@ import java.text.DecimalFormat;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.ListIterator;
+import java.util.Stack;
 
 import javax.management.Query;
 import model.data_structures.Grafos.Arco;
@@ -259,7 +260,7 @@ public class MVCModelo<K> {
 
 
 
-	public void crearArchivoHTML(String pNombreArchivo) throws IOException
+	public void crearArchivoHTML(String pNombreArchivo, GrafoNoDirigido pGrafo) throws IOException
 	{
 		String ruta = "./data/"+pNombreArchivo+".html";
 		int contador = 0;
@@ -275,7 +276,7 @@ public class MVCModelo<K> {
 		writer.println("<head>");
 		writer.println("  <meta name=\"viewport\" content=\"initial-scale=1.0, user-scalable=no\">");
 		writer.println("  <meta charset=\"utf-8\">");
-		writer.println("  <title>cale</title>");
+		writer.println("  <title>"+pNombreArchivo+"</title>");
 		writer.println("  <style>");
 		writer.println("    #map {");
 		writer.println("      height: 100%;");
@@ -307,7 +308,7 @@ public class MVCModelo<K> {
 		writer.println("var path;");
 
 
-		for(Vertice vertice: grafo.darVertices())
+		for(Vertice vertice: pGrafo.darVertices())
 		{
 			if(vertice!=null)
 			{
@@ -335,7 +336,7 @@ public class MVCModelo<K> {
 
 						Arco actual =  (Arco) it.next();
 						
-						Vertice vDestino = grafo.getVertex(actual.darIdDestino());
+						Vertice vDestino = pGrafo.getVertex(actual.darIdDestino());
 						
 						double latVDest= vDestino.darLatitud();
 						double longVDest= vDestino.darLongitud();
@@ -435,9 +436,12 @@ public class MVCModelo<K> {
 	 * @param pLongDestino
 	 * @return Array con los ids de los vertices a seguir.
 	 */
-	public int[] encontrarCaminoCostoMinimo(double pLatOrigen,double pLongOrigen, double pLatDestino, double pLongDestino)
+	public int[] encontrarCaminoTiempoMinimo(double pLatOrigen,double pLongOrigen, double pLatDestino, double pLongDestino)
 	{
 		//TODO : metodo
+		
+		
+		
 		return null;
 	}
 
@@ -477,8 +481,61 @@ public class MVCModelo<K> {
 		return null;
 	}
 
+	
+	/**                                         A7
+	 * Encontrar el camino de costo mínimo (menor distancia Haversine) para 
+	 * un viaje entre dos localizaciones geográficas de la ciudad ((lat,long) origen, (lat, long) destino),
+	 * ingresados por el usuario. 
+	 * 
+	 * Mapa creado: camino  resultante  en  Google  Maps  (incluyendo  la ubicación de inicio y la ubicación de destino).
+	 * 
+	 * @param pLatOrigen
+	 * @param pLongOrigen
+	 * @param pLatDestino
+	 * @param pLongDestino
+	 * @return Array con los ids de los vertices a seguir.
+	 */
+	public Iterable<Integer> encontrarCaminoDistanciaMinimo(double pLatOrigen,double pLongOrigen, double pLatDestino, double pLongDestino)
+	{
+		//TODO : metodo
+		int vIdOrigen = encontrarIdVerticeMasCercano(pLatOrigen, pLongOrigen);
+		int vIdDestino = encontrarIdVerticeMasCercano(pLatDestino, pLongDestino);
+		Iterable camino = grafo.menorDistanciaA(vIdOrigen, vIdDestino);
+		Iterator it = camino.iterator();
+		Stack<Integer> idVertices = new Stack<Integer>();
+		while(it.hasNext())
+		{
+			Arco actual = (Arco) it.next();
+			int idVertice = actual.darIdOrigen();
+			idVertices.push(idVertice);
+		}
+		return idVertices;
+	}
+	
+	/**											A8
+	 * 
+	 * @param pLatOrigen
+	 * @param pLongOrigen
+	 * @param pTiempo
+	 * @return
+	 */
+	public Iterable<Integer> verticesAlcanzablesParaTiempoT(double pLatOrigen, double pLongOrigen, double pTiempo)
+	{
+		int vIdOrigen = encontrarIdVerticeMasCercano(pLatOrigen, pLongOrigen);
+		Vertice vOrigen = grafo.getVertex(vIdOrigen);
+		Stack<Integer> alcanzables = new Stack<>();
+		int[] adj = vOrigen.adj();
+		for(int x : adj)
+		{
+			if(vOrigen.buscarArcoA(x).darTiempo()<=pTiempo)
+			{
+				alcanzables.push(x);
+			}
+		}
+		return alcanzables;
+	}
 
-
+	public 
 
 
 
