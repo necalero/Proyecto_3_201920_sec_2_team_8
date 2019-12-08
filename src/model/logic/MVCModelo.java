@@ -52,7 +52,7 @@ public class MVCModelo<K> {
 	//               Constructor
 	//------------------------------------------------------------------------------
 	/**
-	 * Constructor
+	 * Constructor		
 	 * @throws IOException
 	 */
 	public MVCModelo() throws IOException
@@ -354,22 +354,22 @@ public class MVCModelo<K> {
 					writer.println("		fillColor : 'blue'");
 					writer.println("		});");
 
-					LinkedList arcos = vertice.darArcos();
+					Arco[] arcos = vertice.darArcosD();
 
-					Iterator it = arcos.iterator();
+					
 
 
-					while(it.hasNext())
+					for(Arco arco : arcos)
 					{
 
-						Arco actual =  (Arco) it.next();
 						
-						Vertice vDestino = grafoAGraficar.getVertex(actual.darIdDestino());
+						
+						Vertice vDestino = grafo.getVertex(arco.darIdDestino());
 						
 						double latVDest= vDestino.darLatitud();
 						double longVDest= vDestino.darLongitud();
 
-						if(it != null&&!actual.isMarked()&&(latVDest<=latMax&&latVDest>=latMin&&longVDest>=longMin&&longVDest<=longMax))
+						if(!arco.isMarked()&&(latVDest<=latMax&&latVDest>=latMin&&longVDest>=longMin&&longVDest<=longMax))
 						{
 							writer.println("line = [{");
 							writer.println("lat: " + latV + ",");
@@ -387,13 +387,6 @@ public class MVCModelo<K> {
 							writer.println("});");
 							writer.println("path.setMap(map);");
 							contador++;
-							double porcentajeCarga = (((double)contador)/((double)grafo.E()))*100;
-							DecimalFormat perc = new DecimalFormat("###.##");
-							if(lol==0)
-							{
-								System.out.println(perc.format(porcentajeCarga)+"%");
-							}
-							lol = (short) ((short) (lol+1)%10);
 							if(vDestino.buscarArcoA(vertice.darId())!=null)
 							{
 								vDestino.buscarArcoA(vertice.darId()).marcar();
@@ -431,13 +424,17 @@ public class MVCModelo<K> {
 		Vertice vertMasCercano = null;
 		for(Vertice vertice: vertices)
 		{
-			Haversine haversine = new Haversine();
-			double distanciaActual = haversine.distance(vertice.darLatitud(), vertice.darLongitud(), pLat, pLong);
-			if(distanciaActual<menorDistanciaHaversine)
+			if(vertice!=null)
 			{
-				menorDistanciaHaversine = distanciaActual;
-				vertMasCercano = vertice;
+				Haversine haversine = new Haversine();
+				double distanciaActual = haversine.distance(vertice.darLatitud(), vertice.darLongitud(), pLat, pLong);
+				if(distanciaActual<menorDistanciaHaversine)
+				{
+					menorDistanciaHaversine = distanciaActual;
+					vertMasCercano = vertice;
+				}
 			}
+			
 		}
 		
 		return vertMasCercano.darId();
@@ -515,12 +512,19 @@ public class MVCModelo<K> {
 	 * @param pLongDestino
 	 * @return Array con los ids de los vertices a seguir.
 	 */
-	public GrafoNoDirigido encontrarCaminoDistanciaMinimo(double pLatOrigen,double pLongOrigen, double pLatDestino, double pLongDestino)
+	public GrafoNoDirigido encontrarGrafoDistanciaMinimo(double pLatOrigen,double pLongOrigen, double pLatDestino, double pLongDestino)
 	{
 		//TODO : metodo
 		int vIdOrigen = encontrarIdVerticeMasCercano(pLatOrigen, pLongOrigen);
 		int vIdDestino = encontrarIdVerticeMasCercano(pLatDestino, pLongDestino);
-		GrafoNoDirigido camino = grafo.menorDistanciaA(vIdOrigen, vIdDestino);
+		GrafoNoDirigido camino = grafo.grafoMenorDistanciaA(vIdOrigen, vIdDestino);
+		return camino;
+	}
+	public Iterable encontrarCaminoDistanciaMinimo(double pLatOrigen,double pLongOrigen, double pLatDestino, double pLongDestino)
+	{
+		int vIdOrigen = encontrarIdVerticeMasCercano(pLatOrigen, pLongOrigen);
+		int vIdDestino = encontrarIdVerticeMasCercano(pLatDestino, pLongDestino);
+		Iterable camino = grafo.caminoMenorDistanciaA(vIdOrigen, vIdDestino);
 		return camino;
 	}
 	

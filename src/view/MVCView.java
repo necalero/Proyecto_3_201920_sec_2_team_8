@@ -34,7 +34,7 @@ public class MVCView
 		System.out.println();
 		System.out.println("12. Construir grafo simplificado ");
 		System.out.println("13. Calcular camino costo minimo (Dijkstra) entre dos zonas");
-		System.out.println("14. Calcular camino mas largo");
+		System.out.println("14. Calcula camino mas largo");
 		System.out.println("0. Acaba.");
 		System.out.print("Dar el numero de opción a resolver. Luego oprimir tecla <RETURN>: ");
 	}

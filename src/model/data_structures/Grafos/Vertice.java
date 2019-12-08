@@ -139,6 +139,23 @@ public class Vertice
 		return edgeTo;
 	}
 	
+	public Arco[] darArcosD()
+	{
+		Arco[] arcos = new Arco[edgeTo.size()];
+		Iterator it = edgeTo.iterator();
+		int i = 0;
+		while(it.hasNext())
+		{
+			
+			Arco a = (Arco) it.next();
+			
+			arcos[i] = a;
+			
+			i++;
+		}
+		return arcos;
+	}
+	
 	
 	public void desmarcarTodosArcos()
 	{

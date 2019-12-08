@@ -3,6 +3,9 @@ package model.data_structures.Grafos;
 import java.io.FileReader;
 import java.util.Arrays;
 import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Stack;
 
 public class GrafoNoDirigido<K, V>
 {
@@ -64,12 +67,16 @@ public class GrafoNoDirigido<K, V>
 		
 		Vertice V1 = (Vertice) vertices.get(source);
 		Vertice V2 = (Vertice) vertices.get(destination);
-		if(V1.buscarArcoA(source)==null&&V2.buscarArcoA(destination)==null)
+		if(V1!=null&&V2!=null)
 		{
-			V1.anadirArco(destination, distancia, tiempo);
-			V2.anadirArco(source, distancia, tiempo);
-			numArcos++;
+			if(V1.buscarArcoA(destination)==null&&V2.buscarArcoA(source)==null)
+			{
+				V1.anadirArco(destination, distancia, tiempo);
+				V2.anadirArco(source, distancia, tiempo);
+				numArcos++;
+			}
 		}
+		
 		
 
 	}
@@ -150,12 +157,13 @@ public class GrafoNoDirigido<K, V>
 	@SuppressWarnings("unchecked")
 	public void addVertex(int idVertex, double lat, double lon, int mov_id)
 	{
+		if(!contains(idVertex))
 		vertices.put(idVertex, new Vertice((int) idVertex, lon, lat, mov_id));
 	}
 	
 	public void addVertex(int idVertex, Vertice V)
 	{
-		if(!contains(idVertex))
+		if(!contains(idVertex)&&V!=null)
 		{
 			vertices.put(idVertex, V);
 		}
@@ -297,10 +305,16 @@ public class GrafoNoDirigido<K, V>
 	 * @param idVerticeDestino
 	 * @return
 	 */
-	public GrafoNoDirigido menorDistanciaA(int idVerticeOrigen, int idVerticeDestino)
+	public GrafoNoDirigido grafoMenorDistanciaA(int idVerticeOrigen, int idVerticeDestino)
 	{
 		DijkstraSP sp = new DijkstraSP(this, idVerticeOrigen, "distancia");
-		GrafoNoDirigido aRetornar = sp.pathTo(idVerticeDestino, this);
+		GrafoNoDirigido aRetornar = sp.grafoDistanciaMinima(idVerticeDestino, this);
+		return aRetornar;
+	}
+	public Iterable caminoMenorDistanciaA(int idVerticeOrigen, int idVerticeDestino)
+	{
+		DijkstraSP sp = new DijkstraSP(this, idVerticeOrigen, "distancia");
+		Iterable aRetornar = sp.pathTo(idVerticeDestino, this);
 		return aRetornar;
 	}
 	
@@ -316,6 +330,10 @@ public class GrafoNoDirigido<K, V>
 			vertice.desmarcarTodosArcos();
 		}
 	}
+	
+	
+	
+	
 
 	
 
