@@ -535,20 +535,54 @@ public class MVCModelo<K> {
 	 * @param pTiempo
 	 * @return
 	 */
-	public Iterable<Integer> verticesAlcanzablesParaTiempoT(double pLatOrigen, double pLongOrigen, double pTiempo)
+	public GrafoNoDirigido verticesAlcanzablesParaTiempoT(double pLatOrigen, double pLongOrigen, double pTiempo)
 	{
 		int vIdOrigen = encontrarIdVerticeMasCercano(pLatOrigen, pLongOrigen);
 		Vertice vOrigen = grafo.getVertex(vIdOrigen);
-		Stack<Integer> alcanzables = new Stack<>();
-		int[] adj = vOrigen.adj();
-		for(int x : adj)
+		GrafoNoDirigido alcanzables = new GrafoNoDirigido<>();
+		alcanzables.addVertex(vOrigen.darId(), vOrigen);
+		double tiempo = pTiempo;
+		grafo.uncheck();
+		alcanzables = alcanzable(alcanzables, vIdOrigen, tiempo);
+		return alcanzables;
+	}
+	
+	public GrafoNoDirigido alcanzable(GrafoNoDirigido pAlcanzables, int vId, double pTiempoRestante) 
+	{
+		GrafoNoDirigido alcanzables = pAlcanzables;
+		if(pTiempoRestante >= 0)
 		{
-			if(vOrigen.buscarArcoA(x).darTiempo()<=pTiempo)
+			
+			Vertice actual = grafo.getVertex(vId);
+			actual.marcar(); 
+			double tiempoRestante = pTiempoRestante;
+			
+			   
+			
+			int[] aExplorar = actual.adj();
+			
+
+			for (int idAdy: aExplorar)
 			{
-				alcanzables.push(x);
+				Vertice adyActual = (Vertice) grafo.getVertex(idAdy);
+				Arco a = actual.buscarArcoA(idAdy);
+				tiempoRestante -= a.darTiempo();
+				if(adyActual!=null)
+				{
+					if (!adyActual.isMarked())
+					{
+						alcanzables.addVertex(idAdy, adyActual);
+						alcanzables.addEdge(vId, idAdy, a.darDistancia(), a.darTiempo());
+						alcanzables = alcanzable(alcanzables, idAdy, tiempoRestante); 
+						
+					}
+				}
+				
 			}
+			
 		}
 		return alcanzables;
+		
 	}
 
 	

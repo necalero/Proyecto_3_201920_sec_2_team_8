@@ -158,7 +158,11 @@ public class GrafoNoDirigido<K, V>
 	public void addVertex(int idVertex, double lat, double lon, int mov_id)
 	{
 		if(!contains(idVertex))
-		vertices.put(idVertex, new Vertice((int) idVertex, lon, lat, mov_id));
+		{
+			vertices.put(idVertex, new Vertice((int) idVertex, lon, lat, mov_id));
+		}
+		
+		numVertices++;
 	}
 	
 	public void addVertex(int idVertex, Vertice V)
@@ -167,6 +171,8 @@ public class GrafoNoDirigido<K, V>
 		{
 			vertices.put(idVertex, V);
 		}
+		
+		numVertices++;
 		
 	}
 	
@@ -202,7 +208,12 @@ public class GrafoNoDirigido<K, V>
 		Vertice[] todos = vertices.darData();
 		for(Vertice vertice : todos)
 		{
-			vertice.desmarcar();
+			if(vertice!=null)
+			{
+				vertice.desmarcar();
+				vertice.setComponenteConectada(-1);
+			}
+			
 		}
 	}
 
@@ -214,26 +225,32 @@ public class GrafoNoDirigido<K, V>
 	 * @param s
 	 */
 	//Caso base
-	public void DepthFirstSearch(int vID)   
+	public void DepthFirstSearch(int vID, int cc)   
 	{        
 		((Vertice) vertices.get(vID)).marcar();
-		dfs(vID);
+		int i = 0;
+		i += dfs(vID, cc);
 	}   
 	//Caso recursivo
 	@SuppressWarnings("unchecked")
-	private int dfs(int vID)   
+	private int dfs(int vID, int cc)   
 	{      
 		int cantMarcada = 0;
-		((Vertice) vertices.get(vID)).marcar();      
+		Vertice actual = vertices.get(vID);
+		actual.marcar(); 
+		actual.setComponenteConectada(cc);
 		cantMarcada++;   
-		int[] list = adj(vID);
+		
+		int[] aExplorar = adj(vID);
+		
 
-		for (int w : list)
+		for (int w : aExplorar)
 		{
 			Vertice adyActual = (Vertice) vertices.get(w);
 			if (!adyActual.isMarked())
 			{
-				dfs(w);   
+				cantMarcada+=dfs(w, cc); 
+				
 			}
 		}
 		return cantMarcada;
@@ -250,6 +267,7 @@ public class GrafoNoDirigido<K, V>
 	{
 		Vertice todos[] = vertices.darData();
 		int cantidad = 0;
+		int cc = 1;
 		for(Vertice v : todos)
 		{
 			if(v!=null)
@@ -257,9 +275,11 @@ public class GrafoNoDirigido<K, V>
 				if(!v.isMarked())
 				{
 					cantidad++;
-					DepthFirstSearch(v.darId());
+					DepthFirstSearch(v.darId(),cc);
+					cc++;
 				}
 			}
+			
 			
 		}
 		uncheck();
@@ -272,20 +292,34 @@ public class GrafoNoDirigido<K, V>
 	 * @param idVertex
 	 * @return
 	 */
-	public Iterable<K> getCC(int idVertex)
+	public GrafoNoDirigido getCC(int idVertex)
 	{
-		DepthFirstSearch(idVertex);
+		DepthFirstSearch(idVertex, -2);
 		Vertice[] todos = vertices.darData();
-		HTLPGraphs ccDat = new HTLPGraphs(5);
+		GrafoNoDirigido cc = new GrafoNoDirigido<>();
 		for(Vertice vertice: todos)
 		{
-			if(vertice.isMarked())
+			if(vertice!=null)
 			{
-				ccDat.put(((Integer)vertice.darId()),(Vertice) vertice);
+				if(vertice.isMarked())
+				{
+					cc.addVertex(vertice.darId(), vertice);
+					int[] posiblesArcos = vertice.adj();
+					for(int i = 0; i<posiblesArcos.length;i++)
+					{
+						Vertice posible = getVertex(posiblesArcos[i]);
+						if(posible!=null)
+						{
+							if(posible.isMarked()&&posible.darComponenteConectada()==-2)
+							{
+								cc.addEdge(vertice.darId(), posible.darId(), vertice.buscarArcoA(posible.darId()).darDistancia(), vertice.buscarArcoA(posible.darId()).darTiempo());
+							}
+						}
+					}
+				}
 			}
+			
 		}
-		K[] ccL = (K[]) ccDat.darKeys();
-		Iterable<K> cc = Arrays.asList(ccL);
 		uncheck();
 		return cc;
 	}

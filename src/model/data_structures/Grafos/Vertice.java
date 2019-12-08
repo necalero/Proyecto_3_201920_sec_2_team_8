@@ -11,6 +11,7 @@ public class Vertice
 	private double lat;
 	private int MOVEMENT_ID;
 	private boolean marked;
+	private int componenteConectada;
 	
 
 	public Vertice(int pId, double plon, double plat, int mov_id)
@@ -21,6 +22,7 @@ public class Vertice
 		marked = false;
 		id = pId;
 		edgeTo = new LinkedList<>();
+		componenteConectada = -1;
 	}
 	
 	public Vertice(int pId, double plon, double plat, int mov_id, boolean pMarked, LinkedList pEdge)
@@ -33,7 +35,14 @@ public class Vertice
 		edgeTo = pEdge;
 		
 	}
-	
+	public void setComponenteConectada(int n)
+	{
+		componenteConectada = n;
+	}
+	public int darComponenteConectada()
+	{
+		return componenteConectada;
+	}
 	
 	public void anadirArco(int pVId, double pDistancia, double pTiempo)
 	{

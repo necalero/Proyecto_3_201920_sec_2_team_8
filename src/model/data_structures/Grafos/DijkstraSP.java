@@ -17,12 +17,12 @@ public class DijkstraSP
 	public DijkstraSP(GrafoNoDirigido G, int s, String pTipoPeso)
 	{      
 		tipoPeso = pTipoPeso;
-		edgeTo = new Arco[228046];  
-		distTo = new double[228046]; 
+		edgeTo = new Arco[G.V()+1];  
+		distTo = new double[G.V()+1]; 
 		pq = new IndexMinPQ<Double>(G.V()); 
 		
 		
-		for (int v = 0; v < G.V(); v++)         
+		for (int v = 0; v < G.V()+1; v++)         
 		{
 			distTo[v] = Double.POSITIVE_INFINITY; 
 			edgeTo[v] = null;

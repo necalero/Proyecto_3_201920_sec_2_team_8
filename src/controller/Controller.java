@@ -294,6 +294,20 @@ public class Controller {
 				view.printMessage("");
 				view.printMessage("");
 				view.printMessage("Usted ha escogido la opción 10. Vertices alcanzables para tiempo T (segundos) a partir de localizacion dada");
+				Scanner lector10 = new Scanner(System.in);
+				view.printMessage("Ingrese latitud origen");
+				double latOrigen = lector10.nextDouble();
+				view.printMessage("Ingrese longitud origen");
+				double longOrigen = lector10.nextDouble();
+				view.printMessage("Ingrese el tiempo t (En segundos)");
+				int t = lector10.nextInt();
+				GrafoNoDirigido alcanzables = modelo.verticesAlcanzablesParaTiempoT(latOrigen, longOrigen, t);
+				try {
+					modelo.crearArchivoHTML("Vertices Alcanzables Para Tiempo " +t+"s", alcanzables, 1, 6, -80, -70);
+				} catch (IOException e) {
+					
+					e.printStackTrace();
+				}	
 
 
 
