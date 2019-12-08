@@ -352,6 +352,25 @@ public class GrafoNoDirigido<K, V>
 		return aRetornar;
 	}
 	
+	/**
+	 * 
+	 * @param idVerticeOrigen
+	 * @param idVerticeDestino
+	 * @return
+	 */
+	public GrafoNoDirigido grafoMenorTiempoA(int idVerticeOrigen, int idVerticeDestino)
+	{
+		DijkstraSP sp = new DijkstraSP(this, idVerticeOrigen, "tiempo");
+		GrafoNoDirigido aRetornar = sp.grafoDistanciaMinima(idVerticeDestino, this);
+		return aRetornar;
+	}
+	public Iterable caminoMenorTiempoA(int idVerticeOrigen, int idVerticeDestino)
+	{
+		DijkstraSP sp = new DijkstraSP(this, idVerticeOrigen, "tiempo");
+		Iterable aRetornar = sp.pathTo(idVerticeDestino, this);
+		return aRetornar;
+	}
+	
 	
 	/**
 	 * 

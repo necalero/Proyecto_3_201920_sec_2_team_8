@@ -257,7 +257,7 @@ public class MVCModelo<K> {
 
 
 
-	public void crearArchivoHTML(String pNombreArchivo, GrafoNoDirigido pGrafo, double pLatMin, double pLatMax, double pLongMin, double pLongMax) throws IOException
+	public void crearArchivoHTML(String pNombreArchivo, GrafoNoDirigido pGrafo, double pLatMin, double pLatMax, double pLongMin, double pLongMax, boolean pColor) throws IOException
 	{
 		GrafoNoDirigido grafoAGraficar;
 		if(pGrafo==null)
@@ -313,7 +313,7 @@ public class MVCModelo<K> {
 		writer.println("var line;");
 		writer.println("var path;");
 
-
+		boolean color = pColor;
 		for(Vertice vertice: grafoAGraficar.darVertices())
 		{
 			if(vertice!=null)
@@ -345,13 +345,21 @@ public class MVCModelo<K> {
 				
 				if(latV<=latMax&&latV>=latMin&&longV>=longMin&&longV<=longMax)
 				{
-
+					
 					writer.println("	  var circle = new google.maps.Circle ({");
 					writer.println("		map: map,");
 					writer.println("		center: new google.maps.LatLng("+latV+","+longV+"),");
 					writer.println("		radius : 10,");
 					writer.println("		strokeColor : '#000000',");
-					writer.println("		fillColor : 'blue'");
+					if(color)
+					{
+						writer.println("		fillColor : 'red'");
+						color = false;
+					}
+					else
+					{
+						writer.println("		fillColor : 'blue'");
+					}
 					writer.println("		});");
 
 					Arco[] arcos = vertice.darArcosD();
@@ -453,13 +461,20 @@ public class MVCModelo<K> {
 	 * @param pLongDestino
 	 * @return Array con los ids de los vertices a seguir.
 	 */
-	public int[] encontrarCaminoTiempoMinimo(double pLatOrigen,double pLongOrigen, double pLatDestino, double pLongDestino)
+	public GrafoNoDirigido encontrarGrafoTiempoMinimo(double pLatOrigen,double pLongOrigen, double pLatDestino, double pLongDestino)
 	{
 		//TODO : metodo
-		
-		
-		
-		return null;
+		int vIdOrigen = encontrarIdVerticeMasCercano(pLatOrigen, pLongOrigen);
+		int vIdDestino = encontrarIdVerticeMasCercano(pLatDestino, pLongDestino);
+		GrafoNoDirigido camino = grafo.grafoMenorDistanciaA(vIdOrigen, vIdDestino);
+		return camino;
+	}
+	public Iterable encontrarCaminoTiempoMinimo(double pLatOrigen,double pLongOrigen, double pLatDestino, double pLongDestino)
+	{
+		int vIdOrigen = encontrarIdVerticeMasCercano(pLatOrigen, pLongOrigen);
+		int vIdDestino = encontrarIdVerticeMasCercano(pLatDestino, pLongDestino);
+		Iterable camino = grafo.caminoMenorDistanciaA(vIdOrigen, vIdDestino);
+		return camino;
 	}
 
 

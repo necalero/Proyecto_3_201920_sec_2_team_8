@@ -160,7 +160,7 @@ public class Controller {
 					Scanner lector5 = new Scanner(System.in);
 					String nombreArchivo = lector5.nextLine();
 					try {
-						modelo.crearArchivoHTML(nombreArchivo, null, -1, -1, -1, -1);
+						modelo.crearArchivoHTML(nombreArchivo, null, -1, -1, -1, -1, false);
 					} catch (IOException e) 
 					{
 
@@ -182,11 +182,86 @@ public class Controller {
 				view.printMessage("");
 				view.printMessage("");
 				view.printMessage("Usted ha escogido la opción 6. Encontrar camino tiempo minimo.");
+				
+				if(cargado)
+				{
+					Scanner lector6 = new Scanner(System.in);
+					view.printMessage("Ingrese latitud origen");
+					double latOrigen = lector6.nextDouble();
+					view.printMessage("Ingrese longitud origen");
+					double longOrigen = lector6.nextDouble();
+					view.printMessage("Ingrese latitud destino");
+					double latDestino = lector6.nextDouble();
+					view.printMessage("Ingrese longitud destino");
+					double longDestino = lector6.nextDouble();
+					try {
+						GrafoNoDirigido tiempoMinimo = modelo.encontrarGrafoTiempoMinimo(latOrigen, longOrigen, latDestino, longDestino);
+						Iterable caminoDistanciaMinima = modelo.encontrarCaminoTiempoMinimo(latOrigen, longOrigen, latDestino, longDestino);
+						
+						double totalTiempo = 0;
+						double totalDistancia = 0;
+						int cantidadVertices=0;
+						if(caminoDistanciaMinima==null)
+						{
+							view.printMessage("No existe un camino entre las coordenadas dadas.");
+						}
+						else
+						{
+							Iterator it = caminoDistanciaMinima.iterator();
+							view.printMessage("El camino a seguir es:");
+							Arco a;
+							while(it.hasNext())
+							{					
+								a = (Arco) it.next();
+								if(a!=null)
+								{
+									
+									view.printMessage(a.darIdOrigen()+"->"+a.darIdDestino());
+									totalTiempo+=a.darTiempo();
+									totalDistancia+=a.darDistancia();
+									cantidadVertices++;
 
+								}
+								
+							}
+							view.printMessage("El total de vertices es: "+cantidadVertices);
+							view.printMessage("Sus vertices son: ");
+							Vertice[] vertices = tiempoMinimo.darVertices();
+							for(Vertice v : vertices)
+							{
+								if(v!=null)
+								{
+									view.printMessage("ID: "+ v.darId());
+									view.printMessage("Latitud: "+ v.darLatitud());
+									view.printMessage("Longitud: " +v.darLongitud());
 
+								}
+							}
+							view.printMessage("El tiempo estimado es: "+totalTiempo);
+							view.printMessage("La distancia total del recorrido es: "+ totalDistancia);
+							modelo.crearArchivoHTML("caminoMenorDistancia", tiempoMinimo, 1, 6, -80, -70, true);	
+						}
 
+					} 
+					catch (Exception e) 
+					{
+						e.printStackTrace();
+					}
+					lector6.close();
+				}
+				else
+				{
+					view.printMessage("No se han cargado los datos, cargue los datos antes.");
+				}
+
+				
 				view.printMessage("Escoja su siguiente accion:");
+				
 				break;
+
+
+
+				
 			case 7:
 				view.printMessage("");
 				view.printMessage("");
@@ -271,7 +346,7 @@ public class Controller {
 							}
 							view.printMessage("El tiempo estimado es: "+totalTiempo);
 							view.printMessage("La distancia total del recorrido es: "+ totalDistancia);
-							modelo.crearArchivoHTML("caminoMenorDistancia", distanciaMinima, 1, 6, -80, -70);	
+							modelo.crearArchivoHTML("caminoMenorDistancia", distanciaMinima, 1, 6, -80, -70, true);	
 						}
 
 					} 
@@ -303,7 +378,7 @@ public class Controller {
 				int t = lector10.nextInt();
 				GrafoNoDirigido alcanzables = modelo.verticesAlcanzablesParaTiempoT(latOrigen, longOrigen, t);
 				try {
-					modelo.crearArchivoHTML("Vertices Alcanzables Para Tiempo " +t+"s", alcanzables, 1, 6, -80, -70);
+					modelo.crearArchivoHTML("Vertices Alcanzables Para Tiempo " +t+"s", alcanzables, 1, 6, -80, -70, false);
 				} catch (IOException e) {
 					
 					e.printStackTrace();
