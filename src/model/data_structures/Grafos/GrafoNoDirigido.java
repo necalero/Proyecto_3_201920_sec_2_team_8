@@ -13,7 +13,7 @@ public class GrafoNoDirigido<K, V>
 	private int numVertices;
 	private int numArcos;
 	private HTLPGraphs vertices;
-
+	private int lol;
 	/**
 	 * Crea un grafo No dirigido de tamaño n vértices y sin arcos
 	 * @param n Numero de Vertices
@@ -21,6 +21,7 @@ public class GrafoNoDirigido<K, V>
 	public GrafoNoDirigido(int n) {
 		numVertices = n;
 		vertices = new HTLPGraphs(n);
+		lol = 0;
 
 	}
 	public GrafoNoDirigido(int pNumVertices, int pNumArcos, HTLPGraphs pVertices) {
@@ -227,29 +228,29 @@ public class GrafoNoDirigido<K, V>
 	//Caso base
 	public void DepthFirstSearch(int vID, int cc)   
 	{        
-		((Vertice) vertices.get(vID)).marcar();
-		int i = 0;
-		i += dfs(vID, cc);
+		
+		int i = 0, b = 0;
+		
+		i = dfs(vID, cc, b);
 	}   
 	//Caso recursivo
 	@SuppressWarnings("unchecked")
-	private int dfs(int vID, int cc)   
+	private int dfs(int vID, int cc, int pCantMarcada)   
 	{      
-		int cantMarcada = 0;
-		Vertice actual = vertices.get(vID);
+		int cantMarcada = pCantMarcada;
+		Vertice actual = getVertex(vID);
 		actual.marcar(); 
 		actual.setComponenteConectada(cc);
 		cantMarcada++;   
 		
-		int[] aExplorar = adj(vID);
-		
-
+		int[] aExplorar = actual.adj();
 		for (int w : aExplorar)
 		{
+			
 			Vertice adyActual = (Vertice) vertices.get(w);
 			if (!adyActual.isMarked())
 			{
-				cantMarcada+=dfs(w, cc); 
+				cantMarcada=dfs(w, cc, cantMarcada); 
 				
 			}
 		}
@@ -285,7 +286,18 @@ public class GrafoNoDirigido<K, V>
 		uncheck();
 		return cantidad;
 	}
-
+	
+	public void marcarCC(GrafoNoDirigido g)
+	{
+		for(Vertice v : g.darVertices())
+		{
+			if(v!=null)
+			{
+				v.marcar();
+			}
+		}
+	}
+ 
 	/**
 	 * Obtiene los vértices alcanzados a partir del vértice idVertex después de la ejecución
 	 * de los metodos dfs(K) y cc().
@@ -297,6 +309,7 @@ public class GrafoNoDirigido<K, V>
 		DepthFirstSearch(idVertex, -2);
 		Vertice[] todos = vertices.darData();
 		GrafoNoDirigido cc = new GrafoNoDirigido<>();
+		double mayorId = 0;
 		for(Vertice vertice: todos)
 		{
 			if(vertice!=null)
@@ -310,6 +323,11 @@ public class GrafoNoDirigido<K, V>
 						Vertice posible = getVertex(posiblesArcos[i]);
 						if(posible!=null)
 						{
+							if(posible.darId()>lol)
+							{
+								System.out.println("Mayor id parcial: "+ posible.darId());
+							}
+							
 							if(posible.isMarked()&&posible.darComponenteConectada()==-2)
 							{
 								cc.addEdge(vertice.darId(), posible.darId(), vertice.buscarArcoA(posible.darId()).darDistancia(), vertice.buscarArcoA(posible.darId()).darTiempo());
@@ -330,7 +348,35 @@ public class GrafoNoDirigido<K, V>
 	 */
 	public Vertice[] darVertices()
 	{
-		return vertices.darData();
+		Queue cola = new Queue<>();
+		for(Vertice vertice : vertices.darData())
+		{
+			if(vertice!=null)
+			{
+				cola.enqueue(vertice);
+			}
+		}
+		Vertice[] vARetornar = new Vertice[cola.size()];
+		for(int i = 0; i<cola.size(); i++)
+		{
+			
+			vARetornar[i] = (Vertice) cola.dequeue();
+		}
+		return vARetornar;
+	}
+	
+	public Iterable darIDVertices()
+	{
+		Queue ids = new Queue<>();
+		int i = 0;
+		for(Vertice v : darVertices())
+		{
+			if(v!=null)
+			{
+				ids.enqueue(v.darId());
+			}
+		}
+		return ids;
 	}
 	
 	/**

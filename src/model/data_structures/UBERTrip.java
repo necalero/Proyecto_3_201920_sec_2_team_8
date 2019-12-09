@@ -2,8 +2,8 @@ package model.data_structures;
 
 public class UBERTrip implements Comparable<UBERTrip>
 {
-	private double sourceid;
-	private double dstid;
+	private int sourceid;
+	private int dstid;
 	private double date;
 	private double mean_travel_time;
 	private double standard_deviation_travel_time;
@@ -14,8 +14,8 @@ public class UBERTrip implements Comparable<UBERTrip>
 
 	public UBERTrip(String Psourceid, String Pdstid,String Pdate, String Pmean_travel_time, String Pstandard_deviation_travel_time, String Pgeometric_standard_deviation_travel_time,String Pgeometric_mean_travel_time, String pTipoDate )
 	{
-		sourceid=Double.parseDouble(Psourceid);
-		dstid = Double.parseDouble(Pdstid);
+		sourceid=Integer.parseInt(Psourceid);
+		dstid = Integer.parseInt(Pdstid);
 		date =Double.parseDouble(Pdate);
 		mean_travel_time =Double.parseDouble(Pmean_travel_time);
 		standard_deviation_travel_time =Double.parseDouble(Pstandard_deviation_travel_time);
@@ -30,22 +30,22 @@ public class UBERTrip implements Comparable<UBERTrip>
 		return tipoDate;
 	}
 	
-	public double darSourceid() 
+	public int darSourceid() 
 	{
 		return sourceid;
 	}
 
-	public void cambiarSourceid(double sourceid) 
+	public void cambiarSourceid(int sourceid) 
 	{
 		this.sourceid = sourceid;
 	}
 
-	public double darDstid() 
+	public int darDstid() 
 	{
 		return dstid;
 	}
 
-	public void cambiarDstid(double dstid) 
+	public void cambiarDstid(int dstid) 
 	{
 		this.dstid = dstid;
 	}

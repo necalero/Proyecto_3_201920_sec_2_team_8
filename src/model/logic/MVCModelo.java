@@ -15,11 +15,15 @@ import java.util.ListIterator;
 import java.util.Stack;
 import javax.management.Query;
 import model.data_structures.Grafos.Arco;
+import model.data_structures.Grafos.BreadthFirstPaths;
+import model.data_structures.Grafos.DijkstraSP;
 import model.data_structures.Grafos.GrafoNoDirigido;
+import model.data_structures.Grafos.PrimMST;
 import model.data_structures.Grafos.Vertice;
 import model.data_structures.Grafos.htlpUberTrips;
 import model.data_structures.HashTableLinearProbing;
 import model.data_structures.Haversine;
+import model.data_structures.IndexMinPQ;
 import model.data_structures.MaxPQ;
 import model.data_structures.Queue;
 import model.data_structures.UBERTrip;
@@ -41,6 +45,7 @@ public class MVCModelo<K> {
 	//               Atributos
 	//------------------------------------------------------------------------------
 	private GrafoNoDirigido grafo;
+	private GrafoNoDirigido grafoSimplificado;
 	private int cantidad = 0;
 	private int contador = 0;
 	private int cantidadVertices = 0;
@@ -131,6 +136,8 @@ public class MVCModelo<K> {
 		csvreader = new CSVReader(new FileReader(rutaCSV));
 		csvreader.readNext();
 		uberTripsWeekly = new htlpUberTrips<>(1000);
+		int csvCant = 0;
+
 
 		int i=0;
 
@@ -138,8 +145,11 @@ public class MVCModelo<K> {
 		{
 			UBERTrip actual = new UBERTrip(nextLine[0], nextLine[1],nextLine[2],nextLine[3], nextLine[4], nextLine[5], nextLine[6], "weekly");
 			int key = Integer.parseInt(nextLine[0]);
+
 			uberTripsWeekly.put(key, actual);
+			csvCant++;
 			i++;
+
 
 		}
 		csvreader.close();
@@ -147,6 +157,7 @@ public class MVCModelo<K> {
 
 		System.out.println("Se crearon " + cantidadVertices + " vértices");
 		System.out.println("Se crearon " + cantidadArcos + " arcos");
+		System.out.println("Se leyeron "+csvCant+" lineas del archivo csv.");
 	}
 
 
@@ -173,7 +184,7 @@ public class MVCModelo<K> {
 					if(arco !=null)
 					{
 						Vertice vDestino = grafo.getVertex(arco.darIdDestino());
-						
+
 						double lat1 = vertice.darLatitud();
 						double lat2= vDestino.darLatitud();
 						double lon1= vertice.darLongitud();
@@ -216,7 +227,7 @@ public class MVCModelo<K> {
 						}
 						vertice.setDistanciaArco(arco.darIdDestino(), haversineDistance);
 						vertice.setTiempoArco(arco.darIdDestino(), costoTiempo);
-						
+
 					}
 
 				}
@@ -248,16 +259,16 @@ public class MVCModelo<K> {
 		FileReader reader = new FileReader(pRutaJSON);
 		BufferedReader read = new BufferedReader(reader);
 		String json = read.readLine();
-		
+
 		gson.fromJson(json, GrafoNoDirigido.class);
 		read.close();
 		reader.close();
-		
+
 	}
 
 
 
-	public void crearArchivoHTML(String pNombreArchivo, GrafoNoDirigido pGrafo, double pLatMin, double pLatMax, double pLongMin, double pLongMax, boolean pColor) throws IOException
+	public void crearArchivoHTML(String pNombreArchivo, GrafoNoDirigido pGrafo, double pLatMin, double pLatMax, double pLongMin, double pLongMax, String pColor, Vertice[] pAux) throws IOException
 	{
 		GrafoNoDirigido grafoAGraficar;
 		if(pGrafo==null)
@@ -312,8 +323,47 @@ public class MVCModelo<K> {
 		writer.println("});");
 		writer.println("var line;");
 		writer.println("var path;");
+		String color = "blue";
+		if(!pColor.equals("bruh")||!pColor.equals("especial"))
+		{
+			color = pColor;	
+		}
 
-		boolean color = pColor;
+		if(pAux!=null)
+		{
+			for(Vertice vertice: pAux)
+			{
+				if(vertice!=null)
+				{
+
+					double latV= vertice.darLatitud();
+					double longV= vertice.darLongitud();
+
+
+					writer.println("	  var circle = new google.maps.Circle ({");
+					writer.println("		map: map,");
+					writer.println("		center: new google.maps.LatLng("+latV+","+longV+"),");
+					writer.println("		radius : 100,");
+					writer.println("		strokeColor : '#000000',");
+
+					writer.println("		fillColor : 'red'");
+
+
+					writer.println("		});");
+					writer.println("	  var circle = new google.maps.Circle ({");
+					writer.println("		map: map,");
+					writer.println("		center: new google.maps.LatLng("+latV+","+longV+"),");
+					writer.println("		radius : 10,");
+					writer.println("		strokeColor : '#000000',");
+
+					writer.println("		fillColor : 'red'");
+
+
+					writer.println("		});");
+
+				}
+			}
+		}
 		for(Vertice vertice: grafoAGraficar.darVertices())
 		{
 			if(vertice!=null)
@@ -322,12 +372,12 @@ public class MVCModelo<K> {
 				double latV= vertice.darLatitud();
 				double longV= vertice.darLongitud();
 				//Default values: 4.621360||4.597714||-74.062707||-74.094723
-				
+
 				double latMin = 0;
 				double latMax = 0;
 				double longMin = 0;
 				double longMax = 0;
-				
+
 				if(pLatMax == -1&&pLatMin==-1&&pLongMax==-1&&pLongMin==-1)
 				{
 					latMin = 4.597714;
@@ -342,64 +392,76 @@ public class MVCModelo<K> {
 					longMin = pLongMin;
 					longMax = pLongMax;
 				}
-				
+
 				if(latV<=latMax&&latV>=latMin&&longV>=longMin&&longV<=longMax)
 				{
-					
+
 					writer.println("	  var circle = new google.maps.Circle ({");
 					writer.println("		map: map,");
 					writer.println("		center: new google.maps.LatLng("+latV+","+longV+"),");
 					writer.println("		radius : 10,");
 					writer.println("		strokeColor : '#000000',");
-					if(color)
-					{
-						writer.println("		fillColor : 'red'");
-						color = false;
-					}
-					else
-					{
-						writer.println("		fillColor : 'blue'");
-					}
+
+					writer.println("		fillColor : '"+color+"'");
+
+
 					writer.println("		});");
 
 					Arco[] arcos = vertice.darArcosD();
 
-					
+
 
 
 					for(Arco arco : arcos)
 					{
-
-						
-						
-						Vertice vDestino = grafo.getVertex(arco.darIdDestino());
-						
-						double latVDest= vDestino.darLatitud();
-						double longVDest= vDestino.darLongitud();
-
-						if(!arco.isMarked()&&(latVDest<=latMax&&latVDest>=latMin&&longVDest>=longMin&&longVDest<=longMax))
+						if(arco!=null)
 						{
-							writer.println("line = [{");
-							writer.println("lat: " + latV + ",");
-							writer.println("lng: " + longV);
-							writer.println("},");
-							writer.println("{");
-							writer.println("lat: " + latVDest + ",");
-							writer.println("lng: " + longVDest);
-							writer.println("}");
-							writer.println("];");
-							writer.println("path = new google.maps.Polyline({");
-							writer.println("path: line,");
-							writer.println("strokeColor: '#FF0000',");
-							writer.println("strokeWeight: 1");
-							writer.println("});");
-							writer.println("path.setMap(map);");
-							contador++;
-							if(vDestino.buscarArcoA(vertice.darId())!=null)
+							Vertice vDestino;
+							if(pColor.equals("especial"))
 							{
-								vDestino.buscarArcoA(vertice.darId()).marcar();
+								int idDest = arco.darIdDestino();
+								Vertice vDest = grafo.getVertex(arco.darIdDestino());
+								int moviddest = vDest.darMOVEMENT_ID();
+								
+								vDestino = grafoAGraficar.getVertex(moviddest);
 							}
-						}				
+							else
+							{
+								vDestino = grafoAGraficar.getVertex(arco.darIdDestino());
+							}
+							
+							if(vDestino!=null)
+							{
+								double latVDest= vDestino.darLatitud();
+								double longVDest= vDestino.darLongitud();
+
+								if(!arco.isMarked()&&(latVDest<=latMax&&latVDest>=latMin&&longVDest>=longMin&&longVDest<=longMax))
+								{
+									writer.println("line = [{");
+									writer.println("lat: " + latV + ",");
+									writer.println("lng: " + longV);
+									writer.println("},");
+									writer.println("{");
+									writer.println("lat: " + latVDest + ",");
+									writer.println("lng: " + longVDest);
+									writer.println("}");
+									writer.println("];");
+									writer.println("path = new google.maps.Polyline({");
+									writer.println("path: line,");
+									writer.println("strokeColor: '#FF0000',");
+									writer.println("strokeWeight: 1");
+									writer.println("});");
+									writer.println("path.setMap(map);");
+									contador++;
+									if(vDestino.buscarArcoA(vertice.darId())!=null)
+									{
+										vDestino.buscarArcoA(vertice.darId()).marcar();
+									}
+								}
+							}
+							
+						}
+
 					}
 				}
 			}
@@ -417,6 +479,7 @@ public class MVCModelo<K> {
 		System.out.println("Se genero el archivo, lo podrá encontrar en la carpeta data.");
 
 	}
+
 
 
 	/**
@@ -442,9 +505,9 @@ public class MVCModelo<K> {
 					vertMasCercano = vertice;
 				}
 			}
-			
+
 		}
-		
+
 		return vertMasCercano.darId();
 	}
 
@@ -493,10 +556,42 @@ public class MVCModelo<K> {
 	 * 
 	 * 
 	 */
-	public MaxPQ verticesConMenorVelocidad(int pN)
+	public Vertice[] verticesConMenorVelocidad(int pN)
 	{
 		//TODO: metodo
-		return null;
+		IndexMinPQ velocidades = new IndexMinPQ<>(grafo.V());
+		Vertice[] vertices = grafo.darVertices();
+		Vertice[] nMenorVel = new Vertice[pN];
+		for(Vertice v : vertices)
+		{
+			if(v!=null)
+			{
+				double sumaVelocidades = 0;
+				double cantVelocidades = 0;
+				Arco[] arcos = v.darArcosD();
+				for(Arco arco : arcos)
+				{
+					if(arco!=null)
+					{
+						double vel = arco.darVelocidad();
+						if(vel>0)
+						{
+							sumaVelocidades+=vel;
+							cantVelocidades++;
+						}
+					}
+				}
+				double promedioVelocidades = sumaVelocidades/cantVelocidades;
+				velocidades.insert(v.darId(), promedioVelocidades);
+			}
+		}
+
+		for(int i = 0; i< nMenorVel.length; i++)
+		{
+			nMenorVel[i] = grafo.getVertex(velocidades.delMin());
+		}
+
+		return nMenorVel;
 	}
 
 
@@ -507,13 +602,14 @@ public class MVCModelo<K> {
 	 * vial de Bogotá.
 	 * @return
 	 */
-	public Iterable<K> distanciaMSTSubgrafoMayor()
+	public GrafoNoDirigido distanciaMSTSubgrafoMayor()
 	{
-		//TODO: metodo
-		return null;
+		GrafoNoDirigido compMayor = componenteConectadoMayor(grafo.darIDVertices());
+		PrimMST mstPrim = new PrimMST(compMayor, "distancia");
+		return mstPrim.arbolMST(grafo);
 	}
 
-	
+
 	/**                                         A7
 	 * Encontrar el camino de costo mínimo (menor distancia Haversine) para 
 	 * un viaje entre dos localizaciones geográficas de la ciudad ((lat,long) origen, (lat, long) destino),
@@ -542,7 +638,7 @@ public class MVCModelo<K> {
 		Iterable camino = grafo.caminoMenorDistanciaA(vIdOrigen, vIdDestino);
 		return camino;
 	}
-	
+
 	/**											A8
 	 * 
 	 * @param pLatOrigen
@@ -561,21 +657,21 @@ public class MVCModelo<K> {
 		alcanzables = alcanzable(alcanzables, vIdOrigen, tiempo);
 		return alcanzables;
 	}
-	
+
 	public GrafoNoDirigido alcanzable(GrafoNoDirigido pAlcanzables, int vId, double pTiempoRestante) 
 	{
 		GrafoNoDirigido alcanzables = pAlcanzables;
 		if(pTiempoRestante >= 0)
 		{
-			
+
 			Vertice actual = grafo.getVertex(vId);
 			actual.marcar(); 
 			double tiempoRestante = pTiempoRestante;
-			
-			   
-			
+
+
+
 			int[] aExplorar = actual.adj();
-			
+
 
 			for (int idAdy: aExplorar)
 			{
@@ -589,20 +685,256 @@ public class MVCModelo<K> {
 						alcanzables.addVertex(idAdy, adyActual);
 						alcanzables.addEdge(vId, idAdy, a.darDistancia(), a.darTiempo());
 						alcanzables = alcanzable(alcanzables, idAdy, tiempoRestante); 
-						
+
 					}
 				}
-				
+
 			}
-			
+
 		}
 		return alcanzables;
-		
+
 	}
 
-	
 
 
+	/**
+	 * Retorna el componente conectado de mayor tamaño dados unos vertices de entrada
+	 * @param idVertices Los id de los vertices de entrada
+	 * @return
+	 */
+	public GrafoNoDirigido componenteConectadoMayor(Iterable idVertices)
+	{
+
+		GrafoNoDirigido compMayor = null;
+		int mayorNumeroDeVertices = 0;
+		Iterator it = idVertices.iterator();
+		double mayorIdTotal = 0;
+		while(it.hasNext())
+		{
+			int i = (int) it.next();
+			Vertice v = (Vertice) grafo.getVertex(i);
+			if(mayorIdTotal<v.darId())
+			{
+				System.out.println("-----------Mayor id total "+v.darId());
+			}
+
+			int idV = v.darId();
+			if(!grafo.getVertex(idV).isMarked())
+			{
+				GrafoNoDirigido compActual = grafo.getCC(idV);
+				grafo.marcarCC(compActual);
+				if(compActual.V()>mayorNumeroDeVertices)
+				{
+					compMayor = compActual;
+					mayorNumeroDeVertices = compActual.V();
+				}
+			}
+
+		}
+		grafo.uncheck();
+		return compMayor;
+
+	}
+	public int cantComponentesConectados(Iterable idVertices)
+	{
+
+		int compConectados = 0;	
+		Iterator it = idVertices.iterator();
+		while(it.hasNext())
+		{
+			int idV = (int) it.next();
+			if(!grafo.getVertex(idV).isMarked())
+			{
+				GrafoNoDirigido compActual = grafo.getCC(idV);
+				grafo.marcarCC(compActual);
+				compConectados++;
+			}
+
+		}
+		grafo.uncheck();
+		return compConectados;
+
+	}
+
+
+	public GrafoNoDirigido crearGrafoSimplificado()
+	{
+
+		grafoSimplificado = new GrafoNoDirigido<>();
+		for(Vertice v : grafo.darVertices())
+		{
+			if(v!=null)
+			{
+				Vertice x = new Vertice(v.darId(), v.darLongitud(), v.darLatitud(), v.darMOVEMENT_ID());
+				x.cleanArcos();
+				grafoSimplificado.addVertex(x.darMOVEMENT_ID(), x);
+			}
+		}
+		for(Vertice w : grafoSimplificado.darVertices())
+		{
+			if(w!=null)
+			{
+				Vertice vert = grafo.getVertex(w.darId());
+				for(Arco a : vert.darArcosD())
+				{
+					if(!(grafo.getVertex(a.darIdDestino()).darMOVEMENT_ID()==w.darMOVEMENT_ID()))
+					{
+						double costoTiempo = 0;
+						double sumaTiempos = 0;
+						double cantidadTiempos = 0;
+						
+						for(UBERTrip ut : uberTripsWeekly.darData())
+						{
+							if(ut!=null)
+							{
+								if((ut.darSourceid()==w.darMOVEMENT_ID()&&ut.darDstid()==grafo.getVertex(a.darIdDestino()).darMOVEMENT_ID())||(ut.darDstid()==w.darMOVEMENT_ID()&&ut.darSourceid()==grafo.getVertex(a.darIdDestino()).darMOVEMENT_ID()))
+								{
+									sumaTiempos += ut.darMean_travel_time();
+									cantidadTiempos++;
+								}
+							}
+						}
+						costoTiempo = sumaTiempos/cantidadTiempos;
+						
+						grafoSimplificado.addEdge(w.darMOVEMENT_ID(), grafo.getVertex(a.darIdDestino()).darMOVEMENT_ID(), 1, costoTiempo);
+					}
+				}
+			}
+
+		}
+		return grafoSimplificado;
+
+
+
+		/*
+	grafoSimplificado = new GrafoNoDirigido<>();
+	Vertice representante = null;
+	Vertice[] vertices = grafo.darVertices();
+	boolean seEncontro = false;
+	for(UBERTrip ut : uberTripsWeekly.darData())
+	{
+		if(ut!=null)
+		{
+			if(!grafoSimplificado.contains(ut.darSourceid()))
+			{
+				for(int i=0; i<vertices.length&&!seEncontro; i++)
+				{
+					if(vertices[i]!=null)
+					{
+						if(vertices[i].darMOVEMENT_ID()==ut.darSourceid())
+						{
+							representante = vertices[i];
+							seEncontro=true;
+						}
+					}
+				}
+
+			}
+			if(!grafoSimplificado.contains(ut.darDstid()))
+			{
+				for(int i=0; i<vertices.length&&!seEncontro; i++)
+				{
+					if(vertices[i]!=null)
+					{
+						if(vertices[i].darMOVEMENT_ID()==ut.darDstid())
+						{
+							representante = vertices[i];
+							seEncontro=true;
+						}
+					}
+				}
+
+			}
+			Vertice v = new Vertice(representante.darMOVEMENT_ID(), representante.darLongitud(), representante.darLatitud(), representante.darMOVEMENT_ID());
+			grafoSimplificado.addVertex(representante.darMOVEMENT_ID(), v);
+		}
+
+
+	}
+	double costoTiempo = 0;
+	double sumaTiempos = 0;
+	double cantidadTiempos = 0;
+
+
+	for(Vertice v : grafo.darVertices())
+	{
+
+		if(v!=null)
+		{
+			v.marcar();
+			for(Arco a : v.darArcosD())
+			{
+
+				if(a!=null)
+				{
+					if(!a.isMarked())
+					{
+						a.marcar();
+						//Calcula el promedio de tiempo	de los viajes Uber reportados en el	trimestre donde	la zona origen y destino es la misma.
+						int idOrigen = a.darIdOrigen();
+						Vertice origen = grafo.getVertex(idOrigen);
+						int idDestino = a.darIdDestino();
+						Vertice destino = grafo.getVertex(idDestino);
+						for(int i = 0; i < uberTripsWeekly.darData().length; i++)
+						{
+							if(uberTripsWeekly.darData()[i]!=null)
+							{
+								UBERTrip actual = uberTripsWeekly.darData()[i];
+								if(actual.darSourceid()==origen.darMOVEMENT_ID()&&actual.darDstid()==destino.darMOVEMENT_ID())
+								{
+									sumaTiempos += actual.darMean_travel_time();
+									cantidadTiempos++;
+								}
+							}
+						}
+
+						if(sumaTiempos==0)
+						{
+							costoTiempo = 200;
+						}						
+						else 
+						{
+							costoTiempo = sumaTiempos/cantidadTiempos;
+						}
+						grafoSimplificado.addEdge(v.darMOVEMENT_ID(), grafo.getVertex(a.darIdDestino()).darMOVEMENT_ID(), 0, costoTiempo);
+
+					}
+
+				}
+			}
+		}
+	}
+	return grafoSimplificado;
+		 */
+
+
+
+
+	}
+
+
+	public GrafoNoDirigido DijkstraTiempoGrafoSimplificado(int pZonaOrigen, int pZonaDestino)
+	{
+		DijkstraSP dijk = new DijkstraSP(grafoSimplificado, pZonaOrigen, "tiempoEspecial");
+		GrafoNoDirigido respuesta = dijk.grafoTiempoEspecialMinimo(pZonaDestino, grafoSimplificado, grafo);
+		return respuesta;
+	}
+
+	public GrafoNoDirigido grafoMasLargoGrafoSimplificado(int pIdZonaOrigen)
+	{
+		BreadthFirstPaths bfpaths = new BreadthFirstPaths(grafoSimplificado, pIdZonaOrigen);
+		GrafoNoDirigido longestPath = bfpaths.graphToFurthest(grafoSimplificado);
+		return longestPath;
+
+	}
+	public Iterable caminoMasLargoGrafoSimplificado(int pIdZonaOrigen)
+	{
+		BreadthFirstPaths bfpaths = new BreadthFirstPaths(grafoSimplificado, pIdZonaOrigen);
+		Iterable longestPath = bfpaths.pathToFurthest(grafoSimplificado);
+		return longestPath;
+
+	}
 
 
 

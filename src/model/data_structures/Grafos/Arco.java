@@ -17,6 +17,19 @@ public class Arco<K> {
 		actualizarVelocidad();
 		marked = pMarked;
 	}
+	
+	public int other(int idV)
+	{
+		int other = -1;
+		if(idV==idV1)
+		{
+			other= idV2;
+		}
+		else {
+			other= idV1;
+		}
+		return other;
+	}
 
 	public void marcar()
 	{

@@ -35,6 +35,11 @@ public class Vertice
 		edgeTo = pEdge;
 		
 	}
+	
+	public void cleanArcos()
+	{
+		edgeTo = new LinkedList<>();
+	}
 	public void setComponenteConectada(int n)
 	{
 		componenteConectada = n;
@@ -136,9 +141,12 @@ public class Vertice
 	public int[] adj()
 	{
 		int[] listaAdyacentes = new int[edgeTo.size()];
-		for(int i = 0; i<edgeTo.size(); i++)
+		Iterator it = edgeTo.iterator();
+		for(int i = 0; i<edgeTo.size()&&it.hasNext(); i++)
 		{
-			listaAdyacentes[i] = edgeTo.get(i).darIdDestino();
+			Arco a = (Arco) it.next();
+			if(a!=null)
+			listaAdyacentes[i] = a.darIdDestino();			
 		}
 		return listaAdyacentes;
 	}
